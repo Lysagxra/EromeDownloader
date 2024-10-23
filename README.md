@@ -10,11 +10,14 @@ A command-line tool for downloading media files from Erome albums using Python a
 
 ## Directory Structure
 ```
-/project-root
-│ ├── start.sh          # Main Bash script to run the downloader
-├── album_downloader.py # Python script for downloading albums
-├── profile_crawler.py  # Python script to crawl profiles for album links
-└── URLs.txt            # Text file containing album URLs
+project-root/
+└── utils/
+|   ├── usage.sh                   # Bash script to display usage of start.sh
+|   └── extract_profile_name.sh    # Script to extract profile name from start.sh
+├── start.sh                       # Main Bash script to run the downloader
+├── album_downloader.py            # Python script for downloading albums
+├── profile_crawler.py             # Python script to crawl profiles for album links
+└── URLs.txt                       # Text file containing album URLs
 ```
 
 ## Dependencies
