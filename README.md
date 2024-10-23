@@ -37,14 +37,15 @@ Create a `URLs.txt` file in the project root and list the album URLs you want to
 To start the process, execute the main script via the command line:
 
 ```
-start.sh [-p <profile_page_url>]
+chmod +x start.sh  # Make the script executable
+./start.sh [-p <profile_page_url>]
     Use the `-p` option if you want to extract album links from a specific profile.
 ```
 
 Example
 
 ```bash
-start.sh -p https://www.erome.com/marieanita
+./start.sh -p https://www.erome.com/marieanita
 ```
 
 The downloaded files will be saved in the `Downloads` directory.
