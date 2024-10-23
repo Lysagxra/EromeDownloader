@@ -47,4 +47,4 @@ Example
 start.sh -p https://www.erome.com/marieanita
 ```
 
-The downloaded files will be saved in the Downloads directory.
+The downloaded files will be saved in the `Downloads` directory.
