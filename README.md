@@ -38,9 +38,8 @@ To start the process, execute the main script via the command line:
 
 ```bash
 start.sh [-p <profile_page_url>]
+    Use the `-p` option if you want to extract album links from a specific profile.
 ```
-
-Use the `-p` option if you want to extract album links from a specific profile.
 
 Example
 
