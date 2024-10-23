@@ -9,8 +9,13 @@ A command-line tool for downloading media files from Erome albums using Python a
 - Supports batch downloading via a list of URLs.
 
 ## Directory Structure
-
-/project-root │ ├── start.sh # Main Bash script to run the downloader ├── album_downloader.py # Python script for downloading albums ├── profile_crawler.py # Python script to crawl profiles for album links └── URLs.txt # Text file containing album URLs
+```
+/project-root
+│ ├── start.sh          # Main Bash script to run the downloader
+├── album_downloader.py # Python script for downloading albums
+├── profile_crawler.py  # Python script to crawl profiles for album links
+└── URLs.txt            # Text file containing album URLs
+```
 
 ## Dependencies
 
@@ -32,12 +37,13 @@ Create a `URLs.txt` file in the project root and list the album URLs you want to
 To start the process, execute the main script via the command line:
 
 ```bash
-bash start.sh [-p <profile_page_url>]
+start.sh [-p <profile_page_url>]
+```
 
-    Use the -p option if you want to extract album links from a specific profile.
+Use the `-p` option if you want to extract album links from a specific profile.
 
 Example
 
-bash
-
-bash start.sh -p https://www.erome.com/marieanita
+```bash
+start.sh -p https://www.erome.com/marieanita
+```
