@@ -11,13 +11,12 @@ A command-line tool for downloading media files from Erome albums using Python a
 ## Directory Structure
 ```
 project-root/
-└── utils/
-|   ├── usage.sh                   # Bash script to display usage of start.sh
-|   └── extract_profile_name.sh    # Script to extract profile name from start.sh
-├── start.sh                       # Main Bash script to run the downloader
-├── album_downloader.py            # Python script for downloading albums
-├── profile_crawler.py             # Python script to crawl profiles for album links
-└── URLs.txt                       # Text file containing album URLs
+├── helpers/
+│ ├── album_downloader.py # Python script for downloading albums
+│ └── profile_crawler.py  # Python script to crawl profiles for album links
+├── main.py               # Main Python script to run the downloader
+├── URLs.txt              # Text file containing album URLs
+└── profile_dump.txt      # File for temporary data storage
 ```
 
 ## Dependencies
@@ -29,27 +28,52 @@ project-root/
 - `tldextract` - for extracting domains
 - `rich` - for progress display in terminal
 
-## Usage
+## Installation
 
-### Step 1: Prepare URLs
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/Lysagxra/EromeDownloader.git
 
-Create a `URLs.txt` file in the project root and list the album URLs you want to download.
+2. Navigate to the project directory:
+   ```bash
+   cd EromeDownloader
 
-### Step 2: Run the Downloader
+3. Install the required dependencies:
+   ```bash
+   pip install -r requirements.txt
 
-To start the process, execute the main script via the command line:
+## Batch Download
+
+To batch download from multiple album URLs, you can use the `main.py` script. This script reads URLs from a file named `URLs.txt` and downloads each one using the album downloader.
+
+### Usage
+
+1. Create a `URLs.txt` file in the project root and list the album URLs you want to download.
+
+2. Run the main script via the command line:
 
 ```
-chmod +x start.sh  # Make the script executable
-./start.sh [-p <profile_page_url>]
-```
-
-Use the `-p` option if you want to extract album links from a specific profile.
-
-Example
-
-```bash
-./start.sh -p https://www.erome.com/marieanita
+python3 main.py
 ```
 
 The downloaded files will be saved in the `Downloads` directory.
+
+## Profile Crawler and Downloader
+
+To download all the albums from a profile page, you can use the `-p` option.
+
+### Usage
+
+Use the `-p` option if you want to extract album links from a specific profile:
+
+```bash
+python3 main.py [-p <profile_page_url>]
+```
+
+Example
+
+```
+python3 main.py -p https://www.erome.com/marieanita
+```
+
+The downloaded files will be saved in `Downloads/<profile_name>` directory, where `<profile_name>` is the profile name extracted from the page.
