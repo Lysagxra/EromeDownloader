@@ -1,23 +1,12 @@
 # Erome Downloader for Linux
 
-A command-line tool for downloading media files from Erome albums using Python and Bash scripts. This project includes functionality to extract album links from user profiles and download them efficiently.
+A Python-based tool for downloading albums from Erome albums. This project includes functionality to extract album links from user profiles and download them efficiently.
 
 ## Features
 
 - Extracts album links from user profiles.
 - Downloads media files (images and videos) from Erome albums.
 - Supports batch downloading via a list of URLs.
-
-## Directory Structure
-```
-project-root/
-├── helpers/
-│ ├── album_downloader.py # Python script for downloading albums
-│ └── profile_crawler.py  # Python script to crawl profiles for album links
-├── main.py               # Main Python script to run the downloader
-├── URLs.txt              # Text file containing album URLs
-└── profile_dump.txt      # File for temporary data storage
-```
 
 ## Dependencies
 
@@ -27,6 +16,18 @@ project-root/
 - `argparse` - for command-line argument parsing
 - `tldextract` - for extracting domains
 - `rich` - for progress display in terminal
+
+## Directory Structure
+
+```
+project-root/
+├── helpers/
+│ ├── album_downloader.py # Python script for downloading albums
+│ └── profile_crawler.py  # Python script to crawl profiles for album links
+├── main.py               # Main Python script to run the downloader
+├── URLs.txt              # Text file containing album URLs
+└── profile_dump.txt      # File for temporary data storage
+```
 
 ## Installation
 
