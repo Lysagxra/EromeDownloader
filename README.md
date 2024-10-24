@@ -1,4 +1,4 @@
-# Erome Downloader for Linux
+# Erome Downloader
 
 A Python-based tool for downloading albums from Erome albums. This project includes functionality to extract album links from user profiles and download them efficiently.
 
