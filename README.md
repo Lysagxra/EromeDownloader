@@ -1,6 +1,6 @@
 # Erome Downloader
 
-> A Python-based tool for downloading albums from Erome albums. This project includes functionality to extract album links from user profiles and download them efficiently.
+> A Python-based tool for downloading Erome albums. This project includes functionality to extract album links from user profiles and download them efficiently.
 
 ![Screenshot](https://github.com/Lysagxra/EromeDownloader/blob/820bc16c29f9441ac2e820378ac0aac25de7abc4/misc/Screenshot.png)
 
