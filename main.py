@@ -1,6 +1,6 @@
 """
-This module facilitates the downloading of albums by processing profile URLs and 
-validating album URLs. It provides functionalities for reading and writing 
+This module facilitates the downloading of albums by processing profile URLs and
+validating album URLs. It provides functionalities for reading and writing
 URL lists, handling command-line arguments, and organizing the download
 workflow.
 
@@ -11,18 +11,16 @@ Key Features:
     - Command-line interface for user interaction.
 
 Usage:
-To run the application, execute the module from the command line, providing 
+To run the application, execute the module from the command line, providing
 optional arguments for profile or album URLs.
 """
 
 import argparse
+from rich.live import Live
 
 from helpers.profile_crawler import process_profile_url
-from helpers.album_downloader import (
-    extract_profile_name,
-    validate_url,
-    collect_links
-)
+from helpers.progress_utils import create_progress_bar, create_progress_table
+from album_downloader import extract_profile_name, validate_url, collect_links
 
 DEFAULT_FILE = 'URLs.txt'
 DUMP_FILE = 'profile_dump.txt'
@@ -64,9 +62,16 @@ def process_urls(urls, profile_name):
     Raises:
         ValueError: If any URL is invalid during validation.
     """
-    for url in urls:
-        validated_url = validate_url(url)
-        collect_links(validated_url, profile_name)
+    overall_progress = create_progress_bar()
+    job_progress = create_progress_bar()
+    progress_table = create_progress_table(overall_progress, job_progress)
+
+    with Live(progress_table, refresh_per_second=10):
+        for url in urls:
+            validated_url = validate_url(url)
+            collect_links(
+                validated_url, overall_progress, job_progress, profile_name
+            )
 
 def setup_parser():
     """
