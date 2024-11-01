@@ -23,7 +23,6 @@ from bs4 import BeautifulSoup
 
 DUMP_FILE = "profile_dump.txt"
 HOST_PAGE = "https://www.erome.com"
-NEXT_PAGE_TAG = "?page="
 
 COLORS = {
     'PURPLE': '\033[95m',
@@ -52,7 +51,7 @@ def fetch_profile_page(url):
         requests.RequestException: If there is an error with the HTTP request.
     """
     try:
-        response = requests.get(url)
+        response = requests.get(url, timeout=10)
         response.raise_for_status()
         return BeautifulSoup(response.text, 'html.parser')
 
@@ -60,7 +59,7 @@ def fetch_profile_page(url):
         print(f"Error fetching the page: {req_err}")
         sys.exit(1)
 
-def get_profile_page_links(soup, profile):
+def get_profile_page_links(soup, profile, next_page_tag="?page="):
     """
     Extracts and formats profile page links from a BeautifulSoup object.
 
@@ -77,7 +76,7 @@ def get_profile_page_links(soup, profile):
         # Regular expression to find all 'a' tags with href that match
         # "?page=" followed by a number
         page_links = soup.find_all(
-            'a', {'href': re.compile(f"/{profile}\\{NEXT_PAGE_TAG}\\d+")}
+            'a', {'href': re.compile(f"/{profile}\\{next_page_tag}\\d+")}
         )
 
         page_numbers = []
@@ -93,12 +92,9 @@ def get_profile_page_links(soup, profile):
                 print(f"Error extracting page index from: {page_link['href']}.")
                 print(f"Error: {err}")
 
-        # Get the maximum page number
         max_page_number = max(page_numbers) if page_numbers else None
 
-        # Format the page links
         formatted_page_links = []
-
         if max_page_number is not None:
             # The last item of the page_links list isn't useful, so it is
             # discarded
@@ -152,7 +148,7 @@ def get_profile_album_links(page_links):
 
     return profile_album_links
 
-def generate_profile_dump_file(profile, profile_album_links):
+def generate_profile_dump(profile, profile_album_links):
     """
     Generates a text file containing album links for a specified profile.
 
@@ -168,10 +164,10 @@ def generate_profile_dump_file(profile, profile_album_links):
     """
     print(f"\nDumping content for: {COLORS['BOLD']}{profile}{COLORS['END']}")
 
-    with open(DUMP_FILE, 'w') as file:
+    with open(DUMP_FILE, 'w', encoding='utf-8') as file:
         file.writelines(album_link + '\n' for album_link in profile_album_links)
 
-    print("\t[\u2713] Dump file correctly generated.")
+    print("[\u2713] Dump file correctly generated.")
 
 def process_profile_url(url):
     """
@@ -195,7 +191,7 @@ def process_profile_url(url):
         page_links.insert(0, url)
 
         profile_album_links = get_profile_album_links(page_links)
-        generate_profile_dump_file(profile, profile_album_links)
+        generate_profile_dump(profile, profile_album_links)
 
     except ValueError as val_err:
         print(f"Value error: {val_err}")
