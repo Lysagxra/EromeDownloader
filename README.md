@@ -2,7 +2,7 @@
 
 > A Python-based tool for downloading Erome albums. This project includes functionality to extract album links from user profiles and download them efficiently.
 
-![Screenshot](https://github.com/Lysagxra/EromeDownloader/blob/820bc16c29f9441ac2e820378ac0aac25de7abc4/misc/Screenshot.png)
+![Demo](https://github.com/Lysagxra/EromeDownloader/blob/a9c7e7d262a5bbd317e5fe9266bb01f3069a28e8/misc/Demo.gif)
 
 ## Features
 
@@ -24,8 +24,9 @@
 ```
 project-root/
 ├── helpers/
-│ ├── album_downloader.py # Python script for downloading albums
+│ ├── progress_utils.py   # Python script containing progress utility
 │ └── profile_crawler.py  # Python script to crawl profiles for album links
+├── album_downloader.py   # Python script for downloading albums
 ├── main.py               # Main Python script to run the downloader
 ├── URLs.txt              # Text file containing album URLs
 └── profile_dump.txt      # File for temporary data storage
