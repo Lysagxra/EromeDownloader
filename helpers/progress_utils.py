@@ -57,7 +57,7 @@ def create_progress_table(overall_progress, job_progress):
         ),
         Panel.fit(
             job_progress,
-            title=f"[b {TITLE_COLOR}]Post Progress",
+            title=f"[b {TITLE_COLOR}]Album Progress",
             border_style="medium_purple",
             padding=(1, 1),
             width=40
