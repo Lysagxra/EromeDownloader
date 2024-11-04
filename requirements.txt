@@ -1,5 +1,4 @@
-requests
-beautifulsoup4
-tldextract
-argparse
-rich
+beautifulsoup4==4.12.3
+Requests==2.32.3
+rich==13.9.4
+tldextract==5.1.2
