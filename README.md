@@ -7,7 +7,7 @@
 ## Features
 
 - Extracts album links from user profiles.
-- Downloads multiple media files (images and videos) concurrently from Erome albums.
+- Downloads multiple media files (images and videos) concurrently from albums.
 - Supports batch downloading via a list of URLs.
 - Tracks download progress with a progress bar.
 - Automatically creates a directory structure for organized storage.
