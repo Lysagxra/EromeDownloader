@@ -7,15 +7,16 @@
 ## Features
 
 - Extracts album links from user profiles.
-- Downloads media files (images and videos) from Erome albums.
+- Downloads multiple media files (images and videos) concurrently from Erome albums.
 - Supports batch downloading via a list of URLs.
+- Tracks download progress with a progress bar.
+- Automatically creates a directory structure for organized storage.
 
 ## Dependencies
 
 - Python 3
 - `requests` - for HTTP requests
 - `BeautifulSoup` (bs4) - for HTML parsing
-- `argparse` - for command-line argument parsing
 - `tldextract` - for extracting domains
 - `rich` - for progress display in terminal
 
@@ -24,12 +25,14 @@
 ```
 project-root/
 ├── helpers/
-│ ├── progress_utils.py   # Python script containing progress utility
-│ └── profile_crawler.py  # Python script to crawl profiles for album links
-├── album_downloader.py   # Python script for downloading albums
-├── main.py               # Main Python script to run the downloader
+│ ├── download_utils.py   # Script containing utilities for managing the download process
+│ ├── erome_utils.py      # Script containing Erome utilities
+│ ├── profile_crawler.py  # Script to crawl profiles for album links
+│ └── progress_utils.py   # Script with functions to create and manage progress indicators
+├── album_downloader.py   # Module for downloading albums
+├── main.py               # Main script to run the downloader
 ├── URLs.txt              # Text file containing album URLs
-└── profile_dump.txt      # File for temporary data storage
+└── profile_dump.txt      # Log file for recording session details
 ```
 
 ## Installation
