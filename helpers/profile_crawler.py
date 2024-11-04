@@ -3,10 +3,6 @@ This module provides functionality to extract album links from user profile
 pages on erome. It utilizes the BeautifulSoup library for HTML parsing and
 requests for handling HTTP requests.
 
-Dependencies:
-- requests: To handle HTTP requests and responses.
-- BeautifulSoup (from bs4): For parsing HTML and extracting data.
-
 Usage:
 Run the script from the command line, providing the profile page URL as an
 argument:
@@ -18,6 +14,7 @@ Example:
 
 import sys
 import re
+
 import requests
 from bs4 import BeautifulSoup
 
