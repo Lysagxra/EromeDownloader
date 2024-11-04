@@ -4,12 +4,6 @@ validating album URLs. It provides functionalities for reading and writing
 URL lists, handling command-line arguments, and organizing the download
 workflow.
 
-Key Features:
-    - Read and write URL lists to/from files.
-    - Validate and process profile URLs to generate profile dumps.
-    - Collect links associated with valid album URLs.
-    - Command-line interface for user interaction.
-
 Usage:
 To run the application, execute the module from the command line, providing
 optional arguments for profile or album URLs.
