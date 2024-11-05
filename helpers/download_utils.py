@@ -41,9 +41,6 @@ def save_file_with_progress(response, download_path, task_info):
         response (Response): The HTTP response object containing the file data.
         download_path (str): The local file path where the content should be
                              saved.
-
-    Raises:
-        IOError: If there is an issue writing to the specified download path.
     """
     (job_progress, task, overall_progress, overall_task) = task_info
     file_size = int(response.headers.get("content-length", -1))
