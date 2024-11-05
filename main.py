@@ -1,113 +1,130 @@
 """
-This module provides utilities for handling file downloads with progress
-tracking.
+This module facilitates the downloading of albums by processing profile URLs and
+validating album URLs. It provides functionalities for reading and writing
+URL lists, handling command-line arguments, and organizing the download
+workflow.
+
+Usage:
+To run the application, execute the module from the command line, providing
+optional arguments for profile or album URLs.
 """
 
-from concurrent.futures import ThreadPoolExecutor
+import argparse
+from rich.live import Live
 
-MAX_WORKERS = 5
-TASK_COLOR = 'light_cyan3'
+from helpers.profile_crawler import process_profile_url
+from helpers.progress_utils import create_progress_bar, create_progress_table
+from album_downloader import (
+    extract_profile_name, validate_url, download_album, clear_terminal
+)
 
-KB = 1024
-MB = 1024 * KB
+DEFAULT_FILE = 'URLs.txt'
+DUMP_FILE = 'profile_dump.txt'
 
-def get_chunk_size(file_size):
+def read_file(filename):
     """
-    Determines the optimal chunk size based on the file size.
+    Reads the contents of a file and returns a list of its lines.
 
     Args:
-        file_size (int): The size of the file in bytes.
+        filename (str): The path to the file to be read.
 
     Returns:
-        int: The optimal chunk size in bytes.
+        list: A list of lines from the file, with newline characters removed.
     """
-    thresholds = [
-        (MB, 4 * KB),        # Less than 1 MB
-        (10 * MB, 16 * KB),  # Less than 10 MB
-        (100 * MB, 64 * KB), # Less than 100 MB
-    ]
+    with open(filename, 'r', encoding='utf-8') as file:
+        return file.read().splitlines()
 
-    for threshold, chunk_size in thresholds:
-        if file_size < threshold:
-            return chunk_size
-
-    return 128 * KB
-
-def save_file_with_progress(response, download_path, task_info):
+def write_file(filename, content=''):
     """
-    Handles the HTTP response for a file download.
+    Writes content to a specified file. If content is not provided, the file is
+    cleared.
 
     Args:
-        response (Response): The HTTP response object containing the file data.
-        download_path (str): The local file path where the content should be
-                             saved.
+        filename (str): The path to the file to be written to.
+        content (str, optional): The content to write to the file. Defaults to
+                                 an empty string.
+    """
+    with open(filename, 'w', encoding='utf-8') as file:
+        file.write(content)
+
+def process_urls(urls, profile_name):
+    """
+    Validates and processes a list of URLs to download items.
+
+    Args:
+        urls (list): A list of URLs to process.
+        profile_name (str): The name of the profile associated with the URLs.
 
     Raises:
-        IOError: If there is an issue writing to the specified download path.
+        ValueError: If any URL is invalid during validation.
     """
-    (job_progress, task, overall_progress, overall_task) = task_info
-    file_size = int(response.headers.get("content-length", -1))
-    chunk_size=get_chunk_size(file_size)
-    total_downloaded = 0
+    overall_progress = create_progress_bar()
+    job_progress = create_progress_bar()
+    progress_table = create_progress_table(overall_progress, job_progress)
 
-    with open(download_path, 'wb') as file:
-        for chunk in response.iter_content(chunk_size=chunk_size):
-            if chunk:
-                file.write(chunk)
-                total_downloaded += len(chunk)
-                progress_percentage = (total_downloaded / file_size) * 100
-                job_progress.update(task, completed=progress_percentage)
+    with Live(progress_table, refresh_per_second=10):
+        for url in urls:
+            validated_url = validate_url(url)
+            download_album(
+                validated_url, overall_progress, job_progress, profile_name
+            )
 
-    job_progress.update(task, completed=100, visible=False)
-    overall_progress.advance(overall_task)
-
-def manage_running_tasks(futures, job_progress):
+def setup_parser():
     """
-    Monitors and manages the status of running tasks.
+    Sets up the command-line argument parser for album download processing.
+
+    Returns:
+        argparse.ArgumentParser: The configured argument parser instance.
+    """
+    parser = argparse.ArgumentParser(description='Process album downloads.')
+    parser.add_argument(
+        '-p', '--profile', dest='profile', type=str, metavar='profile_url',
+        help='Generate the profile dump file from the specified profile URL'
+    )
+    parser.add_argument(
+        '-u', '--url', dest='url', type=str, metavar='album_url',
+        help='Album URL to process'
+    )
+    return parser
+
+def handle_profile_processing(profile_url):
+    """
+    Processes a profile URL and extracts the profile name.
 
     Args:
-        futures (dict): A dictionary where keys are futures representing 
-                        asynchronous tasks and values are task information 
-                        to be used for progress updates.
-        job_progress: An object responsible for updating the progress of 
-                      tasks based on their current status.
+        profile_url (str): The URL of the profile to process.
+
+    Returns:
+        str: The extracted profile name, or None if the profile URL is not
+             provided.
     """
-    while futures:
-        for future in list(futures.keys()):
-            if future.running():
-                task = futures.pop(future)
-                job_progress.update(task, visible=True)
+    if profile_url:
+        process_profile_url(profile_url)
+        return extract_profile_name(profile_url)
 
-def run_in_parallel(func, items, progress_info, identifier, *args):
+    return None
+
+def main():
     """
-    Execute a function in parallel for a list of items, updating progress in a
-    job tracker.
+    Main entry point for the album download processing application.
 
-    Args:
-        func (callable): The function to be executed for each item in the
-                         `items` list.
-        items (iterable): A list of items to be processed by the `func`.
-        progress_info: A tuple containing informations about the current job.
-        identifier (str): An identifier for the overall task.
-        *args: Additional positional arguments to be passed to the `func`.
+    Raises:
+        FileNotFoundError: If the specified files cannot be read or written.
+        ValueError: If processing the profile or URLs encounters an error.
     """
-    (job_progress, overall_progress) = progress_info
+    clear_terminal()
+    write_file(DUMP_FILE)
 
-    num_items = len(items)
-    futures = {}
+    parser = setup_parser()
+    args = parser.parse_args()
 
-    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-        overall_task = overall_progress.add_task(
-            f"[{TASK_COLOR}]{identifier}", total=num_items
-        )
-        for indx, item in enumerate(items):
-            task = job_progress.add_task(
-                f"[{TASK_COLOR}]File {indx + 1}/{num_items}",
-                total=100, visible=False
-            )
-            future = executor.submit(
-                func, item, *args,
-                (job_progress, task, overall_progress, overall_task)
-            )
-            futures[future] = task
-            manage_running_tasks(futures, job_progress)
+    file_to_read = DUMP_FILE if args.profile else DEFAULT_FILE
+    profile_name = handle_profile_processing(args.profile)
+
+    urls = read_file(file_to_read)
+    process_urls(urls, profile_name)
+
+    write_file(DEFAULT_FILE)
+
+if __name__ == '__main__':
+    main()
