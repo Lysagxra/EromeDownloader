@@ -128,7 +128,7 @@ def configure_session(url, hostname, album_url, read_timeout=20):
 
     Returns:
         Response: The response object from the GET request, enabling
-        streaming of the response content.
+                  streaming of the response content.
     """
     return SESSION.get(
         url,
