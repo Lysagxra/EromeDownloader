@@ -54,9 +54,6 @@ def process_urls(urls, profile_name):
     Args:
         urls (list): A list of URLs to process.
         profile_name (str): The name of the profile associated with the URLs.
-
-    Raises:
-        ValueError: If any URL is invalid during validation.
     """
     overall_progress = create_progress_bar()
     job_progress = create_progress_bar()
@@ -107,10 +104,6 @@ def handle_profile_processing(profile_url):
 def main():
     """
     Main entry point for the album download processing application.
-
-    Raises:
-        FileNotFoundError: If the specified files cannot be read or written.
-        ValueError: If processing the profile or URLs encounters an error.
     """
     clear_terminal()
     write_file(DUMP_FILE)
