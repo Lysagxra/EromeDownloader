@@ -1,127 +1,113 @@
 """
-This module facilitates the downloading of albums by processing profile URLs and
-validating album URLs. It provides functionalities for reading and writing
-URL lists, handling command-line arguments, and organizing the download
-workflow.
-
-Usage:
-To run the application, execute the module from the command line, providing
-optional arguments for profile or album URLs.
+This module provides utilities for handling file downloads with progress
+tracking.
 """
 
-import argparse
-from rich.live import Live
+from concurrent.futures import ThreadPoolExecutor
 
-from helpers.profile_crawler import process_profile_url
-from helpers.progress_utils import create_progress_bar, create_progress_table
-from album_downloader import extract_profile_name, validate_url, collect_links
+MAX_WORKERS = 5
+TASK_COLOR = 'light_cyan3'
 
-DEFAULT_FILE = 'URLs.txt'
-DUMP_FILE = 'profile_dump.txt'
+KB = 1024
+MB = 1024 * KB
 
-def read_file(filename):
+def get_chunk_size(file_size):
     """
-    Reads the contents of a file and returns a list of its lines.
+    Determines the optimal chunk size based on the file size.
 
     Args:
-        filename (str): The path to the file to be read.
+        file_size (int): The size of the file in bytes.
 
     Returns:
-        list: A list of lines from the file, with newline characters removed.
+        int: The optimal chunk size in bytes.
     """
-    with open(filename, 'r', encoding='utf-8') as file:
-        return file.read().splitlines()
+    thresholds = [
+        (MB, 4 * KB),        # Less than 1 MB
+        (10 * MB, 16 * KB),  # Less than 10 MB
+        (100 * MB, 64 * KB), # Less than 100 MB
+    ]
 
-def write_file(filename, content=''):
-    """
-    Writes content to a specified file. If content is not provided, the file is
-    cleared.
+    for threshold, chunk_size in thresholds:
+        if file_size < threshold:
+            return chunk_size
 
-    Args:
-        filename (str): The path to the file to be written to.
-        content (str, optional): The content to write to the file. Defaults to
-                                 an empty string.
-    """
-    with open(filename, 'w', encoding='utf-8') as file:
-        file.write(content)
+    return 128 * KB
 
-def process_urls(urls, profile_name):
+def save_file_with_progress(response, download_path, task_info):
     """
-    Validates and processes a list of URLs to download items.
+    Handles the HTTP response for a file download.
 
     Args:
-        urls (list): A list of URLs to process.
-        profile_name (str): The name of the profile associated with the URLs.
+        response (Response): The HTTP response object containing the file data.
+        download_path (str): The local file path where the content should be
+                             saved.
 
     Raises:
-        ValueError: If any URL is invalid during validation.
+        IOError: If there is an issue writing to the specified download path.
     """
-    overall_progress = create_progress_bar()
-    job_progress = create_progress_bar()
-    progress_table = create_progress_table(overall_progress, job_progress)
+    (job_progress, task, overall_progress, overall_task) = task_info
+    file_size = int(response.headers.get("content-length", -1))
+    chunk_size=get_chunk_size(file_size)
+    total_downloaded = 0
 
-    with Live(progress_table, refresh_per_second=10):
-        for url in urls:
-            validated_url = validate_url(url)
-            collect_links(
-                validated_url, overall_progress, job_progress, profile_name
+    with open(download_path, 'wb') as file:
+        for chunk in response.iter_content(chunk_size=chunk_size):
+            if chunk:
+                file.write(chunk)
+                total_downloaded += len(chunk)
+                progress_percentage = (total_downloaded / file_size) * 100
+                job_progress.update(task, completed=progress_percentage)
+
+    job_progress.update(task, completed=100, visible=False)
+    overall_progress.advance(overall_task)
+
+def manage_running_tasks(futures, job_progress):
+    """
+    Monitors and manages the status of running tasks.
+
+    Args:
+        futures (dict): A dictionary where keys are futures representing 
+                        asynchronous tasks and values are task information 
+                        to be used for progress updates.
+        job_progress: An object responsible for updating the progress of 
+                      tasks based on their current status.
+    """
+    while futures:
+        for future in list(futures.keys()):
+            if future.running():
+                task = futures.pop(future)
+                job_progress.update(task, visible=True)
+
+def run_in_parallel(func, items, progress_info, identifier, *args):
+    """
+    Execute a function in parallel for a list of items, updating progress in a
+    job tracker.
+
+    Args:
+        func (callable): The function to be executed for each item in the
+                         `items` list.
+        items (iterable): A list of items to be processed by the `func`.
+        progress_info: A tuple containing informations about the current job.
+        identifier (str): An identifier for the overall task.
+        *args: Additional positional arguments to be passed to the `func`.
+    """
+    (job_progress, overall_progress) = progress_info
+
+    num_items = len(items)
+    futures = {}
+
+    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+        overall_task = overall_progress.add_task(
+            f"[{TASK_COLOR}]{identifier}", total=num_items
+        )
+        for indx, item in enumerate(items):
+            task = job_progress.add_task(
+                f"[{TASK_COLOR}]File {indx + 1}/{num_items}",
+                total=100, visible=False
             )
-
-def setup_parser():
-    """
-    Sets up the command-line argument parser for album download processing.
-
-    Returns:
-        argparse.ArgumentParser: The configured argument parser instance.
-    """
-    parser = argparse.ArgumentParser(description='Process album downloads.')
-    parser.add_argument(
-        '-p', '--profile', dest='profile', type=str, metavar='profile_url',
-        help='Generate the profile dump file from the specified profile URL'
-    )
-    parser.add_argument(
-        '-u', '--url', dest='url', type=str, metavar='album_url',
-        help='Album URL to process'
-    )
-    return parser
-
-def handle_profile_processing(profile_url):
-    """
-    Processes a profile URL and extracts the profile name.
-
-    Args:
-        profile_url (str): The URL of the profile to process.
-
-    Returns:
-        str: The extracted profile name, or None if the profile URL is not
-             provided.
-    """
-    if profile_url:
-        process_profile_url(profile_url)
-        return extract_profile_name(profile_url)
-
-    return None
-
-def main():
-    """
-    Main entry point for the album download processing application.
-
-    Raises:
-        FileNotFoundError: If the specified files cannot be read or written.
-        ValueError: If processing the profile or URLs encounters an error.
-    """
-    write_file(DUMP_FILE)
-
-    parser = setup_parser()
-    args = parser.parse_args()
-
-    file_to_read = DUMP_FILE if args.profile else DEFAULT_FILE
-    profile_name = handle_profile_processing(args.profile)
-
-    urls = read_file(file_to_read)
-    process_urls(urls, profile_name)
-
-    write_file(DEFAULT_FILE)
-
-if __name__ == '__main__':
-    main()
+            future = executor.submit(
+                func, item, *args,
+                (job_progress, task, overall_progress, overall_task)
+            )
+            futures[future] = task
+            manage_running_tasks(futures, job_progress)
