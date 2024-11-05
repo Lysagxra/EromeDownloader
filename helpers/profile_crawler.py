@@ -17,6 +17,7 @@ import re
 
 import requests
 from bs4 import BeautifulSoup
+from rich.progress import Progress, SpinnerColumn, BarColumn, TextColumn
 
 DUMP_FILE = "profile_dump.txt"
 HOST_PAGE = "https://www.erome.com"
@@ -60,14 +61,14 @@ def get_profile_page_links(soup, profile, next_page_tag="?page="):
     """
     Extracts and formats profile page links from a BeautifulSoup object.
 
-    Parameters:
-    soup (BeautifulSoup): The BeautifulSoup object representing the HTML content
-                          to search through.
-    profile (str): The profile identifier to match in the URL path.
+    Args:
+        soup (BeautifulSoup): The BeautifulSoup object representing the HTML
+                              content to search through.
+        profile (str): The profile identifier to match in the URL path.
 
     Returns:
-    list: A list of formatted profile page links as strings.
-          If no links are found, an empty list is returned.
+        list: A list of formatted profile page links as strings.
+              If no links are found, an empty list is returned.
     """
     try:
         # Regular expression to find all 'a' tags with href that match
@@ -109,13 +110,13 @@ def extract_album_links_in_page(soup):
     """
     Extracts album links from a BeautifulSoup object representing a webpage.
 
-    Parameters:
-    soup (BeautifulSoup): The BeautifulSoup object representing the HTML content
-                          to search through.
+    Args:
+        soup (BeautifulSoup): The BeautifulSoup object representing the HTML 
+                              content to search through.
 
     Returns:
-    list: A list of strings, where each string is a link to an album. If no
-          album links are found, an empty list is returned.
+        list: A list of strings, where each string is a link to an album. If no
+              album links are found, an empty list is returned.
     """
     album_links_items = soup.find_all(
         'a', {'class': "album-link", 'href': True}
@@ -123,48 +124,60 @@ def extract_album_links_in_page(soup):
     album_links = [item['href'] for item in album_links_items]
     return album_links
 
-def get_profile_album_links(page_links):
+def create_progress_bar():
+    """
+    Creates and returns a progress bar with a spinner and percentage display.
+
+    Returns:
+        Progress: A progress bar object configured with a spinner, progress bar, 
+                  and percentage text.
+    """
+    return Progress(
+        "{task.description}",
+        SpinnerColumn(),
+        BarColumn(),
+        TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
+        transient=True
+    )
+
+def get_profile_album_links(pages):
     """
     Retrieves album links from a list of profile page links.
 
-    Parameters:
-    page_links (list): A list of strings representing URLs of profile pages from
-                       which to extract album links.
+    Args:
+        page (list): A list of strings representing URLs of profile pages 
+                     from which to extract album links.
 
     Returns:
-    list: A list of strings, where each string is a link to an album found on
-          the profile pages. If no album links are found, an empty list is
-          returned.
+        list: A list of strings, where each string is a link to an album found
+              on the profile pages. If no album links are found, an empty list
+              is returned.
     """
     profile_album_links = []
+    num_pages = len(pages)
 
-    for page_link in page_links:
-        soup = fetch_profile_page(page_link)
-        album_links = extract_album_links_in_page(soup)
-        profile_album_links.extend(album_links)
+    with create_progress_bar() as progress_bar:
+        task = progress_bar.add_task('[cyan]Progress', total=num_pages)
+        for page in pages:
+            soup = fetch_profile_page(page)
+            album_links = extract_album_links_in_page(soup)
+            profile_album_links.extend(album_links)
+            progress_bar.advance(task)
 
     return profile_album_links
 
-def generate_profile_dump(profile, profile_album_links):
+def generate_profile_dump(profile_album_links):
     """
     Generates a text file containing album links for a specified profile.
 
-    Parameters:
-    profile (str): The profile identifier used to name the output file.
-    profile_album_links (list): A list of strings, where each string is a link
-                                to an album associated with the specified
-                                profile.
-
-    Returns:
-    None: This function does not return any value. It creates a file in the
-          current working directory.
+    Args:
+        profile (str): The profile identifier used to name the output file.
+        profile_album_links (list): A list of strings, where each string is a
+                                    link to an album associated with the
+                                    specified profile.
     """
-    print(f"\nDumping content for: {COLORS['BOLD']}{profile}{COLORS['END']}")
-
     with open(DUMP_FILE, 'w', encoding='utf-8') as file:
         file.writelines(album_link + '\n' for album_link in profile_album_links)
-
-    print("[\u2713] Dump file correctly generated.")
 
 def process_profile_url(url):
     """
@@ -181,6 +194,7 @@ def process_profile_url(url):
         An error message if a ValueError occurs during processing.
     """
     profile = url.split('/')[-1]
+    print(f"\nDumping profile: {COLORS['BOLD']}{profile}{COLORS['END']}")
     soup = fetch_profile_page(url)
 
     try:
@@ -188,7 +202,8 @@ def process_profile_url(url):
         page_links.insert(0, url)
 
         profile_album_links = get_profile_album_links(page_links)
-        generate_profile_dump(profile, profile_album_links)
+        generate_profile_dump(profile_album_links)
+        print("[\u2713] Dump file successfully generated.")
 
     except ValueError as val_err:
         print(f"Value error: {val_err}")
@@ -196,11 +211,6 @@ def process_profile_url(url):
 def main():
     """
     Main function to execute the profile album extraction process.
-
-    This function serves as the entry point for the script. It fetches the
-    profile page from a specified URL, extracts all profile page links,
-    retrieves album links from those pages, and generates a text file
-    containing the album links.
     """
     if len(sys.argv) != 2:
         print("Usage: python profile_crawler.py <profile_page_url>")

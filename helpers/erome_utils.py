@@ -18,9 +18,6 @@ def validate_url(album_url):
 
     Returns:
         str: The normalized URL using the global domain (`HOST_NAME`).
-
-    Raises:
-        SystemExit: If the provided URL is not a valid Erome domain.
     """
     parsed_url = urlparse(album_url)
     regions = [

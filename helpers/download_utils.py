@@ -41,6 +41,7 @@ def save_file_with_progress(response, download_path, task_info):
         response (Response): The HTTP response object containing the file data.
         download_path (str): The local file path where the content should be
                              saved.
+        task_info (tuple): A tuple containing progress-related objects.
     """
     (job_progress, task, overall_progress, overall_task) = task_info
     file_size = int(response.headers.get("content-length", -1))
