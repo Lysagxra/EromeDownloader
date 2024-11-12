@@ -38,16 +38,22 @@ project-root/
 ## Installation
 
 1. Clone the repository:
-   ```bash
-   git clone https://github.com/Lysagxra/EromeDownloader.git
+
+```bash
+git clone https://github.com/Lysagxra/EromeDownloader.git
+```
 
 2. Navigate to the project directory:
-   ```bash
-   cd EromeDownloader
+
+```bash
+cd EromeDownloader
+```
 
 3. Install the required dependencies:
-   ```bash
-   pip install -r requirements.txt
+
+```bash
+pip install -r requirements.txt
+```
 
 ## Batch Download
 
@@ -77,7 +83,7 @@ Use the `-p` option if you want to extract album links from a specific profile:
 python3 main.py [-p <profile_page_url>]
 ```
 
-Example
+### Example
 
 ```
 python3 main.py -p https://www.erome.com/marieanita
