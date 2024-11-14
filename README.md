@@ -17,7 +17,6 @@
 - Python 3
 - `requests` - for HTTP requests
 - `BeautifulSoup` (bs4) - for HTML parsing
-- `tldextract` - for extracting domains
 - `rich` - for progress display in terminal
 
 ## Directory Structure
