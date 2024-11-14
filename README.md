@@ -25,14 +25,16 @@
 ```
 project-root/
 ├── helpers/
-│ ├── download_utils.py   # Script containing utilities for managing the download process
+│ ├── download_utils.py   # Utilities for managing the download process
 │ ├── erome_utils.py      # Script containing Erome utilities
+│ ├── file_utils.py       # Utilities for file input/output operations
+│ ├── general_utils.py    # Utilities for fetching web pages, managing directories, and clearing the terminal
 │ ├── profile_crawler.py  # Script to crawl profiles for album links
-│ └── progress_utils.py   # Script with functions to create and manage progress indicators
+│ └── progress_utils.py   # Script with functions to create and manage progress indicators 
 ├── album_downloader.py   # Module for downloading albums
 ├── main.py               # Main script to run the downloader
-├── URLs.txt              # Text file containing album URLs
-└── profile_dump.txt      # Log file for recording session details
+├── profile_dump.txt      # Log file for recording session details
+└── URLs.txt              # Text file containing album URLs
 ```
 
 ## Installation
