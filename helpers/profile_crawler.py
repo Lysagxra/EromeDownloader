@@ -4,9 +4,9 @@ pages on erome. It utilizes the BeautifulSoup library for HTML parsing and
 requests for handling HTTP requests.
 
 Usage:
-Run the script from the command line, providing the profile page URL as an
-argument:
-    python profile_crawler.py <profile_page_url>
+    Run the script from the command line, providing the profile page URL as an
+    argument:
+        python profile_crawler.py <profile_page_url>
 
 Example:
     python profile_crawler.py https://www.erome.com/marieanita
@@ -65,10 +65,13 @@ def get_profile_page_links(soup, profile, next_page_tag="?page="):
         soup (BeautifulSoup): The BeautifulSoup object representing the HTML
                               content to search through.
         profile (str): The profile identifier to match in the URL path.
+        next_page_tag (str, optional): The query parameter to indicate the 
+                                       page number in the URL
+                                       (default is "?page=").
 
-    Returns:
-        list: A list of formatted profile page links as strings.
-              If no links are found, an empty list is returned.
+    Raises:
+        ValueError: If no valid profile page links are found in the provided
+                    `soup`.
     """
     try:
         # Regular expression to find all 'a' tags with href that match
@@ -87,8 +90,10 @@ def get_profile_page_links(soup, profile, next_page_tag="?page="):
                 page_numbers.append(page_number)
 
             except (AttributeError, ValueError, TypeError) as err:
-                print(f"Error extracting page index from: {page_link['href']}.")
-                print(f"Error: {err}")
+                print(
+                    "Error extracting page index from "
+                    f"{page_link['href']}: {err}."
+                )
 
         max_page_number = max(page_numbers) if page_numbers else None
 
@@ -129,8 +134,8 @@ def create_progress_bar():
     Creates and returns a progress bar with a spinner and percentage display.
 
     Returns:
-        Progress: A progress bar object configured with a spinner, progress bar, 
-                  and percentage text.
+        Progress: A progress bar object configured with a spinner,
+                  progress bar, and percentage text.
     """
     return Progress(
         "{task.description}",
@@ -189,9 +194,6 @@ def process_profile_url(url):
     Raises:
         ValueError: If an error occurs during the extraction of links from the
                     profile page.
-
-    Prints:
-        An error message if a ValueError occurs during processing.
     """
     profile = url.split('/')[-1]
     print(f"\nDumping profile: {COLORS['BOLD']}{profile}{COLORS['END']}")

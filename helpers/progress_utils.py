@@ -42,7 +42,7 @@ def create_progress_table(overall_progress, job_progress):
                                  files.
 
     Returns:
-        Table: A rich Table object containing a grid layout with two panels:
+        Table: A Rich Table object containing a grid layout with two panels:
                one for overall progress and another for job-specific progress, 
                each with styled titles and borders.
     """
@@ -61,7 +61,7 @@ def create_progress_table(overall_progress, job_progress):
             border_style="medium_purple",
             padding=(1, 1),
             width=40
-        ),
+        )
     )
     return progress_table
 
@@ -73,7 +73,7 @@ def create_log_table(log_messages):
         log_messages (Progress): An instance of a progress tracking object.
 
     Returns:
-        Table: A rich Table object containing the formatted log panel with 
+        Table: A Rich Table object containing the formatted log panel with 
                the specified log messages.
     """
     log_row = "\n".join([f"• {message}" for message in log_messages])
