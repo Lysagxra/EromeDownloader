@@ -10,42 +10,16 @@ import argparse
 from urllib.parse import urlparse
 
 import requests
-from bs4 import BeautifulSoup
 from rich.live import Live
 
+from helpers.progress_utils import create_progress_bar, create_progress_table
+from helpers.download_utils import save_file_with_progress, run_in_parallel
+from helpers.general_utils import (
+    fetch_page, create_download_directory, clear_terminal
+)
 from helpers.erome_utils import (
     validate_url, extract_profile_name, extract_hostname
 )
-from helpers.progress_utils import create_progress_bar, create_progress_table
-from helpers.download_utils import save_file_with_progress, run_in_parallel
-
-DOWNLOAD_FOLDER = "Downloads"
-
-SESSION = requests.Session()
-HEADERS = {"User-Agent": "Mozilla/5.0"}
-TIMEOUT = 10
-
-def fetch_page(url):
-    """
-    Fetches the HTML content of a page at the given URL.
-
-    Args:
-        url (str): The URL to fetch.
-
-    Returns:
-        BeautifulSoup: Parsed HTML content of the page.
-
-    Raises:
-        requests.RequestException: If there are issues with the request.
-    """
-    try:
-        response = SESSION.get(url, headers=HEADERS, timeout=TIMEOUT)
-        response.raise_for_status()
-        return BeautifulSoup(response.content, "html.parser")
-
-    except requests.RequestException as req_err:
-        print(f"Request error: {req_err}")
-        return None
 
 def extract_download_links(album_url):
     """
@@ -53,7 +27,8 @@ def extract_download_links(album_url):
     album URL.
 
     Args:
-        album_url (str): The URL of the album from which to extract media links.
+        album_url (str): The URL of the album from which to extract media
+                         links.
 
     Returns:
         List[str]: A list of unique download links (video and image URLs)
@@ -73,13 +48,21 @@ def download_album(album_url, overall_progress, job_progress, profile=None):
     to a local directory.
 
     Args:
-        album_url (str): The URL of the album from which video and image links
-                         are to be collected.
-        profile (str, optional): The profile identifier to use for additional
-                                 context.
+        album_url (str): The URL of the album containing video and image links
+                         to be collected and downloaded.
+        overall_progress (Progress): A `rich.progress.Progress` object used to
+                                      track the overall download progress.
+        job_progress (Progress): A `rich.progress.Progress` object used to
+                                  track the progress of individual downloads.
+        profile (str, optional): The profile identifier. If not provided, the
+                                 media is downloaded to a default directory.
 
     Returns:
         int: The number of media files successfully downloaded.
+
+    Raises:
+        ValueError: If the album URL is invalid or the media cannot be
+                    extracted.
     """
     download_links = extract_download_links(album_url)
 
@@ -93,52 +76,43 @@ def download_album(album_url, overall_progress, job_progress, profile=None):
         album_id, download_path, album_url
     )
 
-def create_download_directory(album_path):
+def configure_session(
+    url, hostname, album_url=None, timeout=10, read_timeout=20
+):
     """
-    Constructs a download path for the given title and ensures that the
-    directory exists.
-
-    Args:
-        album_path (str): The title or album ID to use as the folder name.
-
-    Returns:
-        str: The full download path where files will be saved.
-    """
-    download_path = os.path.join(DOWNLOAD_FOLDER, album_path)
-
-    try:
-        os.makedirs(download_path, exist_ok=True)
-        return download_path
-
-    except OSError as os_err:
-        print(f"Error creating directory: {os_err}")
-        sys.exit(1)
-
-def configure_session(url, hostname, album_url, read_timeout=20):
-    """
-    Configures and sends a GET request using the global SESSION object.
+    Configures a GET request with custom headers and timeouts using a global
+    SESSION object, and sends the request to the specified URL.
 
     Args:
         url (str): The URL to which the GET request will be sent.
-        hostname (str): The hostname to be used in the Referer and Origin
+        hostname (str): The hostname to be used in the `Referer` and `Origin`
                         headers.
-        album_url (str, optional): An optional album URL to use as the Referer.
-                                   If None, the Referer will be set to the 
-                                   hostname.
+        album_url (str, optional): An optional URL of the album to use as the
+                                   `Referer` header. If not provided, the 
+                                   `Referer` will default to the base URL 
+                                   formed from the `hostname`.
+        timeout (int, optional): The connection timeout value in seconds
+                                 (default is 10).
+        read_timeout (int, optional): The timeout value for the read operation
+                                      in seconds (default is 20).
 
     Returns:
-        Response: The response object from the GET request, enabling
-                  streaming of the response content.
+        Response: The response object from the GET request, which contains the
+                  server's response to the HTTP request.
+
+    Raises:
+        requests.RequestException: If any error occurs during the GET request.
     """
-    return SESSION.get(
+    return requests.Session().get(
         url,
         stream=True,
         headers={
             "Referer": f"https://{hostname}" if not album_url else album_url,
             "Origin": f"https://{hostname}",
             "User-Agent": "Mozila/5.0",
+            "Connection": "keep-alive"
         },
-        timeout=(TIMEOUT, read_timeout)
+        timeout=(timeout, read_timeout)
     )
 
 def download(download_link, download_path, album_url, task_info):
@@ -151,8 +125,14 @@ def download(download_link, download_path, album_url, task_info):
         download_path (str): The local directory path where the file will be
                              saved.
         album_url (str, optional): An optional album URL to use as the Referer.
-                                   If None, the Referer will be set based on the
-                                   hostname.
+                                   If None, the Referer will be set based on
+                                   the hostname.
+        task_info (tuple): A tuple containing the progress tracking
+                           information:
+                           - `job_progress`: The progress bar object.
+                           - `task`: The specific task being tracked.
+                           - `overall_progress`: The overall progress task 
+                             being updated.
     """
     parsed_url = urlparse(download_link)
     file_name = os.path.basename(parsed_url.path)
@@ -162,19 +142,6 @@ def download(download_link, download_path, album_url, task_info):
 
     with configure_session(download_link, hostname, album_url) as response:
         save_file_with_progress(response, final_path, task_info)
-
-def clear_terminal():
-    """
-    Clears the terminal screen based on the operating system.
-    """
-    options = {
-        'nt': 'cls',      # Windows
-        'posix': 'clear'  # macOS and Linux
-    }
-
-    command = options.get(os.name)
-    if command:
-        os.system(command)
 
 def main():
     """
