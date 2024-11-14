@@ -5,7 +5,6 @@ as well as extracting relevant information such as profile names and hostnames.
 
 import sys
 from urllib.parse import urlparse
-import tldextract
 
 HOST_NAME = "www.erome.com"
 
@@ -45,8 +44,8 @@ def extract_profile_name(profile_url):
         str: The extracted profile name.
 
     Raises:
-        SystemExit: If the provided URL is invalid, the function prints an error
-                    message and exits the program.
+        SystemExit: If the provided URL is invalid, the function prints an
+                    error message and exits the program.
     """
     try:
         return profile_url.split('/')[-1]
@@ -65,7 +64,9 @@ def extract_hostname(url):
         url (str): The URL from which to extract the hostname.
 
     Returns:
-        str: The extracted hostname in the format 'domain.suffix'.
+        str: The extracted hostname.
     """
-    extracted = tldextract.extract(url)
-    return f"{extracted.domain}.{extracted.suffix}"
+#    extracted = tldextract.extract(url)
+#    return f"{extracted.domain}.{extracted.suffix}"
+    parsed_url = urlparse(url)
+    return parsed_url.netloc
