@@ -9,14 +9,13 @@ Usage:
     optional arguments for profile or album URLs.
 """
 
-import argparse
 from rich.live import Live
 
 from helpers.profile_crawler import process_profile_url
 from helpers.progress_utils import create_progress_bar, create_progress_table
 from helpers.file_utils import read_file, write_file
 from helpers.general_utils import clear_terminal
-from album_downloader import extract_profile_name, validate_url, download_album
+from album_downloader import extract_profile_name, validate_url, download_album, setup_parser
 
 DEFAULT_FILE = 'URLs.txt'
 DUMP_FILE = 'profile_dump.txt'
@@ -56,24 +55,6 @@ def handle_profile_processing(profile_url):
         return extract_profile_name(profile_url)
 
     return None
-
-def setup_parser():
-    """
-    Sets up the command-line argument parser for album download processing.
-
-    Returns:
-        argparse.ArgumentParser: The configured argument parser instance.
-    """
-    parser = argparse.ArgumentParser(description='Process album downloads.')
-    parser.add_argument(
-        '-p', '--profile', dest='profile', type=str, metavar='profile_url',
-        help='Generate the profile dump file from the specified profile URL'
-    )
-    parser.add_argument(
-        '-u', '--url', dest='url', type=str, metavar='album_url',
-        help='Album URL to process'
-    )
-    return parser
 
 def main():
     """

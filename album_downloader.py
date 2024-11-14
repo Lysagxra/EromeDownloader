@@ -5,7 +5,6 @@ the media files, and downloads them to a specified local directory.
 """
 
 import os
-import sys
 import argparse
 from urllib.parse import urlparse
 
@@ -56,13 +55,6 @@ def download_album(album_url, overall_progress, job_progress, profile=None):
                                   track the progress of individual downloads.
         profile (str, optional): The profile identifier. If not provided, the
                                  media is downloaded to a default directory.
-
-    Returns:
-        int: The number of media files successfully downloaded.
-
-    Raises:
-        ValueError: If the album URL is invalid or the media cannot be
-                    extracted.
     """
     download_links = extract_download_links(album_url)
 
@@ -99,9 +91,6 @@ def configure_session(
     Returns:
         Response: The response object from the GET request, which contains the
                   server's response to the HTTP request.
-
-    Raises:
-        requests.RequestException: If any error occurs during the GET request.
     """
     return requests.Session().get(
         url,
@@ -143,22 +132,35 @@ def download(download_link, download_path, album_url, task_info):
     with configure_session(download_link, hostname, album_url) as response:
         save_file_with_progress(response, final_path, task_info)
 
+def setup_parser():
+    """
+    Sets up the command-line argument parser for album download processing.
+
+    Returns:
+        argparse.ArgumentParser: The configured argument parser instance.
+    """
+    parser = argparse.ArgumentParser(description='Process album downloads.')
+    parser.add_argument(
+        '-p', '--profile', dest='profile', type=str, metavar='profile_url',
+        help='Generate the profile dump file from the specified profile URL'
+    )
+    parser.add_argument(
+        '-u', '--url', dest='url', type=str, metavar='album_url',
+        help='Album URL to process'
+    )
+    return parser
+
 def main():
     """
     Main function that parses command-line arguments and initiates the
     download process.
     """
-    parser = argparse.ArgumentParser(sys.argv[1:])
-    parser.add_argument("-u", help="URL to download", type=str, required=True)
-    parser.add_argument(
-        "-p", help="Profile to download (optional)", type=str, required=False
-    )
-
     clear_terminal()
+    parser = setup_parser()
     args = parser.parse_args()
 
-    validated_url = validate_url(args.u)
-    profile_name = extract_profile_name(args.p) if args.p else None
+    validated_url = validate_url(args.url)
+    profile_name = extract_profile_name(args.profile) if args.profile else None
 
     overall_progress = create_progress_bar()
     job_progress = create_progress_bar()
