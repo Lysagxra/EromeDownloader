@@ -196,7 +196,7 @@ def process_profile_url(url):
                     profile page.
     """
     profile = url.split('/')[-1]
-    print(f"\nDumping profile: {COLORS['BOLD']}{profile}{COLORS['END']}")
+    print(f"Dumping profile: {COLORS['BOLD']}{profile}{COLORS['END']}")
     soup = fetch_profile_page(url)
 
     try:
@@ -205,7 +205,7 @@ def process_profile_url(url):
 
         profile_album_links = get_profile_album_links(page_links)
         generate_profile_dump(profile_album_links)
-        print("[\u2713] Dump file successfully generated.")
+        print("[\u2713] Dump file successfully generated.\n")
 
     except ValueError as val_err:
         print(f"Value error: {val_err}")
