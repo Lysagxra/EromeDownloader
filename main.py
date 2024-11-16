@@ -15,7 +15,9 @@ from helpers.profile_crawler import process_profile_url
 from helpers.progress_utils import create_progress_bar, create_progress_table
 from helpers.file_utils import read_file, write_file
 from helpers.general_utils import clear_terminal
-from album_downloader import extract_profile_name, validate_url, download_album, setup_parser
+from album_downloader import (
+    extract_profile_name, validate_url, download_album, setup_parser
+)
 
 DEFAULT_FILE = 'URLs.txt'
 DUMP_FILE = 'profile_dump.txt'
