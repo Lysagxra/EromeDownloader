@@ -43,18 +43,20 @@ def fetch_page(url, timeout=10):
         print(f"Error fetching page {url}: {req_err}")
         sys.exit(1)
 
-def create_download_directory(directory_path):
+def create_download_directory(directory_name):
     """
-    Constructs a download path for the given title and ensures that the
-    directory exists.
+    Creates a directory for downloads if it doesn't exist.
 
     Args:
-        directory_path (str): The name or the path to use as the folder name.
+        directory_name (str): The name used to create the download directory.
 
     Returns:
-        str: The full download path where files will be saved.
+        str: The path to the created download directory.
+
+    Raises:
+        OSError: If there is an error creating the directory.
     """
-    download_path = os.path.join(DOWNLOAD_FOLDER, directory_path)
+    download_path = os.path.join(DOWNLOAD_FOLDER, directory_name)
 
     try:
         os.makedirs(download_path, exist_ok=True)
