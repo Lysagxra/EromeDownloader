@@ -9,14 +9,12 @@ Usage:
     optional arguments for profile or album URLs.
 """
 
-from rich.live import Live
-
 from helpers.profile_crawler import process_profile_url
-from helpers.progress_utils import create_progress_bar, create_progress_table
 from helpers.file_utils import read_file, write_file
 from helpers.general_utils import clear_terminal
 from album_downloader import (
-    extract_profile_name, validate_url, download_album, setup_parser
+    extract_profile_name, validate_url, download_album,
+    setup_parser, initialize_managers
 )
 
 DEFAULT_FILE = 'URLs.txt'
@@ -30,16 +28,11 @@ def process_urls(urls, profile_name):
         urls (list): A list of URLs to process.
         profile_name (str): The name of the profile associated with the URLs.
     """
-    overall_progress = create_progress_bar()
-    job_progress = create_progress_bar()
-    progress_table = create_progress_table(overall_progress, job_progress)
-
-    with Live(progress_table, refresh_per_second=10):
+    live_manager = initialize_managers()
+    with live_manager.live:
         for url in urls:
             validated_url = validate_url(url)
-            download_album(
-                validated_url, overall_progress, job_progress, profile_name
-            )
+            download_album(validated_url, live_manager, profile=profile_name)
 
 def handle_profile_processing(profile_url):
     """

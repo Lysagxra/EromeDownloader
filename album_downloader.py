@@ -9,9 +9,11 @@ import argparse
 from urllib.parse import urlparse
 
 import requests
-from rich.live import Live
 
-from helpers.progress_utils import create_progress_bar, create_progress_table
+from helpers.managers.live_manager import LiveManager
+from helpers.managers.log_manager import LoggerTable
+from helpers.managers.progress_manager import ProgressManager
+
 from helpers.download_utils import save_file_with_progress, run_in_parallel
 from helpers.general_utils import (
     fetch_page, create_download_directory, clear_terminal
@@ -41,20 +43,18 @@ def extract_download_links(album_url):
     ]
     return list(set([*videos, *images]))
 
-def download_album(album_url, overall_progress, job_progress, profile=None):
+def download_album(album_url, live_manager, profile=None):
     """
-    Collects video and image links from the given album URL and downloads them
-    to a local directory.
+    Downloads an album from the given URL.
 
     Args:
-        album_url (str): The URL of the album containing video and image links
-                         to be collected and downloaded.
-        overall_progress (Progress): A `rich.progress.Progress` object used to
-                                      track the overall download progress.
-        job_progress (Progress): A `rich.progress.Progress` object used to
-                                  track the progress of individual downloads.
-        profile (str, optional): The profile identifier. If not provided, the
-                                 media is downloaded to a default directory.
+        album_url (str): The URL of the album to be downloaded.
+        live_manager (LiveManager): A manager for handling live download
+                                    operations, such as progress tracking or
+                                    concurrent downloads.
+        profile (str): A path to a user-specific profile directory where the
+                       album should be saved. If None, the album is saved in
+                       the default location.
     """
     download_links = extract_download_links(album_url)
 
@@ -63,8 +63,8 @@ def download_album(album_url, overall_progress, job_progress, profile=None):
     download_path = create_download_directory(album_path)
 
     run_in_parallel(
-        download, download_links,
-        (job_progress, overall_progress),
+        download,
+        download_links, live_manager,
         album_id, download_path, album_url
     )
 
@@ -104,24 +104,21 @@ def configure_session(
         timeout=(timeout, read_timeout)
     )
 
-def download(download_link, download_path, album_url, task_info):
+def download(download_link, task, live_manager, download_path, album_url):
     """
-    Downloads a file from the specified URL if it hasn't been downloaded
-    already.
+    Downloads a file from the specified download link and saves it to the given
+    path.
 
     Args:
-        download_link (str): The URL from which the file will be downloaded.
-        download_path (str): The local directory path where the file will be
+        download_link (str): The URL of the file to be downloaded.
+        task (int): The ID of the current download task, used to track progress
+                    and completion.
+        live_manager (LiveManager): A manager responsible for handling live
+                                    updates, such as download progress.
+        download_path (str): The local path where the downloaded file should be
                              saved.
-        album_url (str, optional): An optional album URL to use as the Referer.
-                                   If None, the Referer will be set based on
-                                   the hostname.
-        task_info (tuple): A tuple containing the progress tracking
-                           information:
-                           - `job_progress`: The progress bar object.
-                           - `task`: The specific task being tracked.
-                           - `overall_progress`: The overall progress task 
-                             being updated.
+        album_url (str): The URL of the album, used to configure the session or
+                         for additional context.
     """
     parsed_url = urlparse(download_link)
     file_name = os.path.basename(parsed_url.path)
@@ -130,7 +127,21 @@ def download(download_link, download_path, album_url, task_info):
     final_path = os.path.join(download_path, file_name)
 
     with configure_session(download_link, hostname, album_url) as response:
-        save_file_with_progress(response, final_path, task_info)
+        save_file_with_progress(response, final_path, task, live_manager)
+
+def initialize_managers():
+    """
+    Initializes and returns the managers for progress tracking and logging.
+
+    Returns:
+        LiveManager: Handles the live display of progress and logs.
+    """
+    progress_manager = ProgressManager(
+        task_name = "Album",
+        item_description="File"
+    )
+    logger_table = LoggerTable()
+    return LiveManager(progress_manager, logger_table)
 
 def setup_parser():
     """
@@ -159,17 +170,12 @@ def main():
     parser = setup_parser()
     args = parser.parse_args()
 
+    live_manager = initialize_managers()
     validated_url = validate_url(args.url)
     profile_name = extract_profile_name(args.profile) if args.profile else None
 
-    overall_progress = create_progress_bar()
-    job_progress = create_progress_bar()
-    progress_table = create_progress_table(overall_progress, job_progress)
-
-    with Live(progress_table, refresh_per_second=10):
-        download_album(
-            validated_url, overall_progress, job_progress, profile_name
-        )
+    with live_manager.live:
+        download_album(validated_url, live_manager, profile_name)
 
 if __name__ == "__main__":
     main()
