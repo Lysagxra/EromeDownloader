@@ -12,12 +12,13 @@ Example:
     python profile_crawler.py https://www.erome.com/marieanita
 """
 
-import sys
 import re
+import sys
 
 import requests
 from bs4 import BeautifulSoup
-from rich.progress import Progress, SpinnerColumn, BarColumn, TextColumn
+
+from .managers.progress_manager import ProgressManager
 
 DUMP_FILE = "profile_dump.txt"
 HOST_PAGE = "https://www.erome.com"
@@ -129,22 +130,6 @@ def extract_album_links_in_page(soup):
     album_links = [item['href'] for item in album_links_items]
     return album_links
 
-def create_progress_bar():
-    """
-    Creates and returns a progress bar with a spinner and percentage display.
-
-    Returns:
-        Progress: A progress bar object configured with a spinner,
-                  progress bar, and percentage text.
-    """
-    return Progress(
-        "{task.description}",
-        SpinnerColumn(),
-        BarColumn(),
-        TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
-        transient=True
-    )
-
 def get_profile_album_links(pages):
     """
     Retrieves album links from a list of profile page links.
@@ -161,7 +146,7 @@ def get_profile_album_links(pages):
     profile_album_links = []
     num_pages = len(pages)
 
-    with create_progress_bar() as progress_bar:
+    with ProgressManager.create_progress_bar() as progress_bar:
         task = progress_bar.add_task('[cyan]Progress', total=num_pages)
         for page in pages:
             soup = fetch_profile_page(page)
@@ -182,7 +167,9 @@ def generate_profile_dump(profile_album_links):
                                     specified profile.
     """
     with open(DUMP_FILE, 'w', encoding='utf-8') as file:
-        file.writelines(album_link + '\n' for album_link in profile_album_links)
+        file.writelines(
+            f"{album_link}\n" for album_link in profile_album_links
+        )
 
 def process_profile_url(url):
     """
@@ -205,10 +192,12 @@ def process_profile_url(url):
 
         profile_album_links = get_profile_album_links(page_links)
         generate_profile_dump(profile_album_links)
-        print("[\u2713] Dump file successfully generated.\n")
 
     except ValueError as val_err:
         print(f"Value error: {val_err}")
+
+    finally:
+        print("[\u2713] Dump file successfully generated.\n")
 
 def main():
     """
