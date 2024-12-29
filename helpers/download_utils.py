@@ -59,6 +59,25 @@ def save_file_with_progress(response, download_path, task, live_manager):
                 progress_percentage = (total_downloaded / file_size) * 100
                 live_manager.update_task(task, completed=progress_percentage)
 
+def manage_running_tasks(futures, live_manager):
+    """
+    Manage the status of running tasks and update their progress.
+
+    Args:
+        futures (dict): A dictionary where keys are futures representing the
+                        tasks that have been submitted for execution, and
+                        values are the associated task identifiers in the
+                        job progress tracking system.
+        live_manager (LiveManager): An object responsible for tracking the
+                                    progress of tasks, providing methods to
+                                    update and manage task visibility.
+    """
+    while futures:
+        for future in list(futures.keys()):
+            if future.running():
+                task_id = futures.pop(future)
+                live_manager.update_task(task_id, visible=True)
+
 def run_in_parallel(func, items, live_manager, identifier, *args):
     """
     Executes a function in parallel for a list of items, using multiple worker
@@ -77,10 +96,13 @@ def run_in_parallel(func, items, live_manager, identifier, *args):
         *args: Additional arguments passed to `func` for each execution.
     """
     num_items = len(items)
+    futures = {}
 
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
         live_manager.add_overall_task(identifier, num_items)
 
         for current_task, item in enumerate(items):
             task_id = live_manager.add_task(current_task=current_task)
-            executor.submit(func, item, task_id, live_manager, *args)
+            future = executor.submit(func, item, task_id, live_manager, *args)
+            futures[future] = task_id
+            manage_running_tasks(futures, live_manager)
