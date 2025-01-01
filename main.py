@@ -33,6 +33,7 @@ def process_urls(urls, profile_name):
         for url in urls:
             validated_url = validate_url(url)
             download_album(validated_url, live_manager, profile=profile_name)
+        live_manager.stop()
 
 def handle_profile_processing(profile_url):
     """
