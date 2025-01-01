@@ -176,6 +176,7 @@ def main():
 
     with live_manager.live:
         download_album(validated_url, live_manager, profile_name)
+        live_manager.stop()
 
 if __name__ == "__main__":
     main()
