@@ -6,9 +6,9 @@
 
 ## Features
 
-- Extracts album links from user profiles.
 - Downloads multiple files concurrently from albums.
-- Supports batch downloading via a list of URLs.
+- Supports [batch downloading](https://github.com/Lysagxra/EromeDownloader?tab=readme-ov-file#batch-download) via a list of URLs.
+- Supports [downloading of user profile](https://github.com/Lysagxra/EromeDownloader?tab=readme-ov-file#profile-crawler-and-downloader) album links.
 - Tracks download progress with a progress bar.
 - Automatically creates a directory structure for organized storage.
 
