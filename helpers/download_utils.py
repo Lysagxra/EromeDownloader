@@ -5,7 +5,7 @@ tracking.
 
 from concurrent.futures import ThreadPoolExecutor
 
-MAX_WORKERS = 3
+from .config import MAX_WORKERS
 
 KB = 1024
 MB = 1024 * KB
@@ -22,15 +22,15 @@ def get_chunk_size(file_size):
     """
     thresholds = [
         (1 * MB, 4 * KB),     # Less than 1 MB
-        (10 * MB, 16 * KB),   # 1 MB to 10 MB
-        (100 * MB, 64 * KB),  # 10 MB to 100 MB
+        (10 * MB, 8 * KB),    # 1 MB to 10 MB
+        (100 * MB, 16 * KB),  # 10 MB to 100 MB
     ]
 
     for threshold, chunk_size in thresholds:
         if file_size < threshold:
             return chunk_size
 
-    return 128 * KB
+    return 64 * KB
 
 def save_file_with_progress(response, download_path, task, live_manager):
     """
