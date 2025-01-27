@@ -18,23 +18,13 @@ import sys
 import requests
 from bs4 import BeautifulSoup
 
-from .managers.progress_manager import ProgressManager
+from .managers.progress_manager import create_progress_bar
 
-DUMP_FILE = "profile_dump.txt"
-HOST_PAGE = "https://www.erome.com"
-
-COLORS = {
-    'PURPLE': '\033[95m',
-    'CYAN': '\033[96m',
-    'DARKCYAN': '\033[36m',
-    'BLUE': '\033[94m',
-    'GREEN': '\033[92m',
-    'YELLOW': '\033[93m',
-    'RED': '\033[91m',
-    'BOLD': '\033[1m',
-    'UNDERLINE': '\033[4m',
-    'END': '\033[0m'
-}
+from .config import (
+    HOST_PAGE,
+    DUMP_FILE,
+    COLORS
+)
 
 def fetch_profile_page(url):
     """
@@ -146,7 +136,7 @@ def get_profile_album_links(pages):
     profile_album_links = []
     num_pages = len(pages)
 
-    with ProgressManager.create_progress_bar() as progress_bar:
+    with create_progress_bar() as progress_bar:
         task = progress_bar.add_task('[cyan]Progress', total=num_pages)
         for page in pages:
             soup = fetch_profile_page(page)
