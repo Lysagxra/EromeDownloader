@@ -14,12 +14,19 @@ from helpers.managers.live_manager import LiveManager
 from helpers.managers.log_manager import LoggerTable
 from helpers.managers.progress_manager import ProgressManager
 
-from helpers.download_utils import save_file_with_progress, run_in_parallel
+from helpers.download_utils import (
+    save_file_with_progress,
+    run_in_parallel
+)
 from helpers.general_utils import (
-    fetch_page, create_download_directory, clear_terminal
+    fetch_page,
+    create_download_directory,
+    clear_terminal
 )
 from helpers.erome_utils import (
-    validate_url, extract_profile_name, extract_hostname
+    validate_url,
+    extract_profile_name,
+    extract_hostname
 )
 
 def extract_download_links(album_url):
