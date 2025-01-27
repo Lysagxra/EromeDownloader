@@ -28,6 +28,7 @@ project-root/
 │ │ ├── live_manager.py      # Manages a real-time live display
 │ │ ├── log_manager.py       # Manages real-time log updates
 │ │ └── progress_manager.py  # Manages progress bars
+│ ├── config.py              # Manages constants and settings used across the project
 │ ├── download_utils.py      # Utilities for managing the download process
 │ ├── erome_utils.py         # Functions for validating and processing Erome album URLs.
 │ ├── file_utils.py          # Utilities for managing file operations
