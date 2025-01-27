@@ -12,13 +12,18 @@ Usage:
 from helpers.profile_crawler import process_profile_url
 from helpers.file_utils import read_file, write_file
 from helpers.general_utils import clear_terminal
-from album_downloader import (
-    extract_profile_name, validate_url, download_album,
-    setup_parser, initialize_managers
+from helpers.config import (
+    FILE as DEFAULT_FILE,
+    DUMP_FILE
 )
 
-DEFAULT_FILE = 'URLs.txt'
-DUMP_FILE = 'profile_dump.txt'
+from album_downloader import (
+    extract_profile_name,
+    validate_url,
+    download_album,
+    setup_parser,
+    initialize_managers
+)
 
 def process_urls(urls, profile_name):
     """
