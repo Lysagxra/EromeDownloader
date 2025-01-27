@@ -6,7 +6,7 @@ as well as extracting relevant information such as profile names and hostnames.
 import sys
 from urllib.parse import urlparse
 
-HOST_NAME = "www.erome.com"
+from .config import HOST_NETLOC
 
 def validate_url(album_url):
     """
@@ -16,19 +16,19 @@ def validate_url(album_url):
         album_url (str): The Erome album URL to be validated.
 
     Returns:
-        str: The normalized URL using the global domain (`HOST_NAME`).
+        str: The normalized URL using the global domain (`HOST_NETLOC`).
     """
     parsed_url = urlparse(album_url)
     regions = [
         "cn", "cz", "de", "es", "fr", "it", "nl", "jp", "pt", "pl", "rt"
     ]
 
-    if parsed_url.netloc == HOST_NAME:
+    if parsed_url.netloc == HOST_NETLOC:
         return album_url
 
     for region in regions:
         if parsed_url.netloc == region + ".erome.com":
-            return f"https://{HOST_NAME}{parsed_url.path}"
+            return f"https://{HOST_NETLOC}{parsed_url.path}"
 
     print("Provide a valid Erome URL.")
     return None
