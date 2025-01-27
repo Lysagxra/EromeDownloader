@@ -11,7 +11,7 @@ import sys
 import requests
 from bs4 import BeautifulSoup
 
-DOWNLOAD_FOLDER = "Downloads"
+from .config import DOWNLOAD_FOLDER
 
 def fetch_page(url, timeout=10):
     """
@@ -43,20 +43,18 @@ def fetch_page(url, timeout=10):
         print(f"Error fetching page {url}: {req_err}")
         sys.exit(1)
 
-def create_download_directory(directory_name):
+def create_download_directory(directory_path):
     """
-    Creates a directory for downloads if it doesn't exist.
+    Constructs a download path for the given title and ensures that the
+    directory exists.
 
     Args:
-        directory_name (str): The name used to create the download directory.
+        directory_path (str): The name or the path to use as the folder name.
 
     Returns:
-        str: The path to the created download directory.
-
-    Raises:
-        OSError: If there is an error creating the directory.
+        str: The full download path where files will be saved.
     """
-    download_path = os.path.join(DOWNLOAD_FOLDER, directory_name)
+    download_path = os.path.join(DOWNLOAD_FOLDER, directory_path)
 
     try:
         os.makedirs(download_path, exist_ok=True)
