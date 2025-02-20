@@ -1,4 +1,5 @@
-"""
+"""Main module of the project.
+
 This module facilitates the downloading of albums by processing profile URLs
 and validating album URLs. It provides functionalities for reading and writing
 URL lists, handling command-line arguments, and organizing the download
@@ -9,58 +10,48 @@ Usage:
     optional arguments for profile or album URLs.
 """
 
-from helpers.profile_crawler import process_profile_url
-from helpers.file_utils import read_file, write_file
-from helpers.general_utils import clear_terminal
-from helpers.config import (
-    FILE as DEFAULT_FILE,
-    DUMP_FILE
-)
+from __future__ import annotations
 
 from album_downloader import (
-    extract_profile_name,
-    validate_url,
     download_album,
+    extract_profile_name,
+    initialize_managers,
     setup_parser,
-    initialize_managers
+    validate_url,
 )
+from helpers.config import (
+    DUMP_FILE,
+)
+from helpers.config import (
+    FILE as DEFAULT_FILE,
+)
+from helpers.file_utils import read_file, write_file
+from helpers.general_utils import clear_terminal
+from helpers.profile_crawler import process_profile_url
 
-def process_urls(urls, profile_name):
-    """
-    Validates and processes a list of URLs to download items.
 
-    Args:
-        urls (list): A list of URLs to process.
-        profile_name (str): The name of the profile associated with the URLs.
-    """
+def process_urls(urls: list[str], profile_name: str) -> None:
+    """Validate and processes a list of URLs to download items."""
     live_manager = initialize_managers()
     with live_manager.live:
         for url in urls:
             validated_url = validate_url(url)
             download_album(validated_url, live_manager, profile=profile_name)
+
         live_manager.stop()
 
-def handle_profile_processing(profile_url):
-    """
-    Processes a profile URL and extracts the profile name.
 
-    Args:
-        profile_url (str): The URL of the profile to process.
-
-    Returns:
-        str: The extracted profile name, or None if the profile URL is not
-             provided.
-    """
+def handle_profile_processing(profile_url: str) -> str | None:
+    """Process a profile URL and extracts the profile name."""
     if profile_url:
         process_profile_url(profile_url)
         return extract_profile_name(profile_url)
 
     return None
 
-def main():
-    """
-    Main entry point for the album download processing application.
-    """
+
+def main() -> None:
+    """Run the script."""
     clear_terminal()
     write_file(DUMP_FILE)
 
@@ -75,5 +66,6 @@ def main():
 
     write_file(DEFAULT_FILE)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()
