@@ -6,20 +6,17 @@ import logging
 import sys
 from urllib.parse import urlparse
 
-from .config import HOST_NETLOC
+from .config import HOST_NETLOC, REGIONS
 
 
-def validate_url(album_url: str) -> str:
+def validate_url(album_url: str) -> str | None:
     """Validate and normalize an Erome album URL."""
     parsed_url = urlparse(album_url)
-    regions = [
-        "cn", "cz", "de", "es", "fr", "it", "nl", "jp", "pt", "pl", "rt",
-    ]
 
     if parsed_url.netloc == HOST_NETLOC:
         return album_url
 
-    for region in regions:
+    for region in REGIONS:
         if parsed_url.netloc == region + ".erome.com":
             return f"https://{HOST_NETLOC}{parsed_url.path}"
 
