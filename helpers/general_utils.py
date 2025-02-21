@@ -46,7 +46,7 @@ def create_download_directory(directory_path: str) -> str:
 def clear_terminal() -> None:
     """Clear the terminal screen based on the operating system."""
     commands = {
-        "nt": "cls",      # Windows
+        "nt": "cls",       # Windows
         "posix": "clear",  # macOS and Linux
     }
 
