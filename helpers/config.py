@@ -16,27 +16,23 @@ SESSION_LOG = "session_log.txt"       # The file used to log session errors.
 DUMP_FILE = "profile_dump.txt"        # The name of the file where the profile
                                       # data will be dumped.
 
+# Country codes representing different regions.
+REGIONS = [
+    "cn", "cz", "de", "es", "fr", "it",
+    "nl", "jp", "pt", "pl", "rt", "se",
+]
+
+# Constants for file sizes, expressed in bytes.
 KB = 1024
 MB = 1024 * KB
 
+# Thresholds for file sizes and corresponding chunk sizes used during download.
+# Each tuple represents: (file size threshold, chunk size to download in that range).
 THRESHOLDS = [
     (1 * MB, 4 * KB),     # Less than 1 MB
     (10 * MB, 8 * KB),    # 1 MB to 10 MB
     (100 * MB, 16 * KB),  # 10 MB to 100 MB
 ]
 
+# Default chunk size for files larger than the largest threshold.
 LARGE_FILE_CHUNK_SIZE = 64 * KB
-
-# Dictionary containing ANSI escape sequences for text styles and colors.
-COLORS = {
-    "PURPLE": "\033[95m",
-    "CYAN": "\033[96m",
-    "DARKCYAN": "\033[36m",
-    "BLUE": "\033[94m",
-    "GREEN": "\033[92m",
-    "YELLOW": "\033[93m",
-    "RED": "\033[91m",
-    "BOLD": "\033[1m",       # Bold text style
-    "UNDERLINE": "\033[4m",  # Underlined text style
-    "END": "\033[0m",        # Reset to default terminal styling
-}
