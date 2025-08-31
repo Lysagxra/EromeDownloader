@@ -38,7 +38,6 @@ class LiveManager:
         self.live = Live(
             self._render_live_view(), refresh_per_second=refresh_per_second,
         )
-
         self.start_time = time.time()
         self.update_log("Script started", "The script has started execution.")
 

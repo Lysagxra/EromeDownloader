@@ -42,3 +42,10 @@ THRESHOLDS = [
 
 # Default chunk size for files larger than the largest threshold.
 LARGE_FILE_CHUNK_SIZE = 64 * KB
+
+# ============================
+# HTTP / Network
+# ============================
+# HTTP status codes
+HTTP_STATUS_NOT_FOUND = 404
+HTTP_STATUS_GONE = 410

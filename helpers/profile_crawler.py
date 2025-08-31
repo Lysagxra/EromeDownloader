@@ -13,6 +13,7 @@ Example:
     python profile_crawler.py https://www.erome.com/marieanita
 
 """
+from __future__ import annotations
 
 import logging
 import re
@@ -32,18 +33,30 @@ def fetch_profile_page(url: str) -> BeautifulSoup:
     try:
         response = requests.get(url, timeout=10)
         response.raise_for_status()
-        return BeautifulSoup(response.text, "html.parser")
 
     except requests.RequestException as req_err:
         message = f"Error fetching the page: {req_err}"
         logging.exception(message)
         sys.exit(1)
 
+    return BeautifulSoup(response.text, "html.parser")
+
+
+def extract_page_number(page_link: dict[str, str]) -> int | None:
+    """Extract the page number from a URL."""
+    try:
+        # Extract page number using regex and convert to integer
+        return int(re.search(r"page=(\d+)", page_link["href"]).group(1))
+
+    except (AttributeError, ValueError, TypeError) as err:
+        message = f"Error extracting page index from {page_link['href']}: {err}"
+        logging.exception(message)
+        return None
+
 
 def get_profile_page_links(
     soup: BeautifulSoup,
     profile: str,
-    next_page_tag: str = "?page=",
 ) -> list[str]:
     """Extract and  profile page links from a BeautifulSoup object."""
     try:
@@ -51,35 +64,25 @@ def get_profile_page_links(
         # followed by a number
         page_links = soup.find_all(
             "a",
-            {"href": re.compile(f"/{profile}\\{next_page_tag}\\d+")},
+            {"href": re.compile(f"/{profile}\\?page=\\d+")},
         )
-
-        page_numbers = []
-        for page_link in page_links:
-            try:
-                # Extract page number using regex and convert to integer
-                page_number = int(re.search(r"page=(\d+)", page_link["href"]).group(1))
-                page_numbers.append(page_number)
-
-            except (AttributeError, ValueError, TypeError) as err:
-                message = f"Error extracting page index from {page_link['href']}: {err}"
-                logging.exception(message)
-
-        max_page_number = max(page_numbers) if page_numbers else None
-
-        formatted_page_links = []
-        if max_page_number is not None:
-            # The last item of the page_links list isn't useful, so it is discarded
-            formatted_page_links = [
-                HOST_PAGE + page_link["href"] for page_link in page_links[:-1]
-            ]
-
-        return formatted_page_links
 
     except (AttributeError, TypeError, KeyError) as err:
         message = f"An error occurred while processing the soup: {err}"
         logging.exception(message)
         return []
+
+    page_numbers = [extract_page_number(page_link) for page_link in page_links]
+    max_page_number = max(page_numbers) if page_numbers else None
+
+    formatted_page_links = []
+    if max_page_number is not None:
+        # The last item of the page_links list isn't useful, so it is discarded
+        formatted_page_links = [
+            HOST_PAGE + page_link["href"] for page_link in page_links[:-1]
+        ]
+
+    return formatted_page_links
 
 
 def extract_album_links_in_page(soup: BeautifulSoup) -> list[str]:
@@ -125,19 +128,15 @@ def process_profile_url(url: str) -> None:
         generate_profile_dump(profile_album_links)
 
     except ValueError as val_err:
-        message = f"Value error: {val_err}"
+        message = f"Error occurred processing profile URL: {val_err}"
         logging.exception(message)
 
-    finally:
-        console.print("[green]✓[/green] Dump file successfully generated.")
+    else:
+        console.print("[green]✓[/green] Dump file successfully generated.\n")
 
 
 def main() -> None:
     """Execute the profile album extraction process."""
-    if len(sys.argv) != 2:
-        logging.error("Usage: python profile_crawler.py <profile_page_url>")
-        sys.exit(1)
-
     url = sys.argv[1]
     process_profile_url(url)
 

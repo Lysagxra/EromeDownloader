@@ -3,6 +3,7 @@
 The script validates the provided album URL, collects links to the media files, and
 downloads them to a specified local directory.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -24,9 +25,12 @@ if TYPE_CHECKING:
     from requests.models import Response
 
 
-def extract_download_links(album_url: str) -> list[str]:
+def extract_download_links(album_url: str) -> list[str] | None:
     """Extract download links for video and image sources from the album URL."""
     soup = fetch_page(album_url)
+    if soup is None:
+        return None
+
     videos = [
         video_source["src"] for video_source in soup.find_all("source")
     ]
@@ -42,11 +46,13 @@ def download_album(
     profile: str | None = None,
 ) -> None:
     """Download an album from the given URL."""
-    download_links = extract_download_links(album_url)
-
-    album_id = album_url.split("/")[-1]
+    album_id = album_url.rstrip("/").split("/")[-1]
     album_path = album_id if not profile else Path(profile) / album_id
     download_path = create_download_directory(album_path)
+
+    download_links = extract_download_links(album_url)
+    if download_links is None:
+        return
 
     run_in_parallel(
         download, download_links, live_manager, album_id, download_path, album_url,
@@ -119,14 +125,13 @@ def setup_parser() -> ArgumentParser:
         metavar="album_url",
         help="Album URL to process",
     )
-    return parser
+    return parser.parse_args()
 
 
 def main() -> None:
     """Initiate the download process."""
     clear_terminal()
-    parser = setup_parser()
-    args = parser.parse_args()
+    args = setup_parser()
 
     live_manager = initialize_managers()
     validated_url = validate_url(args.url)

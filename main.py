@@ -19,12 +19,7 @@ from album_downloader import (
     setup_parser,
     validate_url,
 )
-from helpers.config import (
-    DUMP_FILE,
-)
-from helpers.config import (
-    FILE as DEFAULT_FILE,
-)
+from helpers.config import DUMP_FILE, URLS_FILE
 from helpers.file_utils import read_file, write_file
 from helpers.general_utils import clear_terminal
 from helpers.profile_crawler import process_profile_url
@@ -33,6 +28,7 @@ from helpers.profile_crawler import process_profile_url
 def process_urls(urls: list[str], profile_name: str) -> None:
     """Validate and processes a list of URLs to download items."""
     live_manager = initialize_managers()
+
     with live_manager.live:
         for url in urls:
             validated_url = validate_url(url)
@@ -52,19 +48,19 @@ def handle_profile_processing(profile_url: str) -> str | None:
 
 def main() -> None:
     """Run the script."""
+    # Clear the terminal and profile dump file
     clear_terminal()
     write_file(DUMP_FILE)
 
-    parser = setup_parser()
-    args = parser.parse_args()
-
-    file_to_read = DUMP_FILE if args.profile else DEFAULT_FILE
+    # Parse arguments, determine which file to read, and handle profile processing
+    args = setup_parser()
+    file_to_read = DUMP_FILE if args.profile else URLS_FILE
     profile_name = handle_profile_processing(args.profile)
 
+    # Read the content from the determined file, processes the URLs, and clear the files
     urls = read_file(file_to_read)
     process_urls(urls, profile_name)
-
-    write_file(DEFAULT_FILE)
+    write_file(URLS_FILE)
 
 
 if __name__ == "__main__":
