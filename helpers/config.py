@@ -4,22 +4,29 @@ These configurations aim to improve modularity and readability by consolidating 
 into a single location.
 """
 
+# ============================
+# Host Configuration
+# ============================
 HOST_NETLOC = "www.erome.com"         # Host name of the site.
 HOST_PAGE = f"https://{HOST_NETLOC}"  # Full URL of the homepage.
-MAX_WORKERS = 3                       # The maximum number of threads for
-                                      # concurrent downloads.
-DOWNLOAD_FOLDER = "Downloads"         # The folder where downloaded files
-                                      # will be stored.
-FILE = "URLs.txt"                     # The name of the file containing the
-                                      # list of URLs to process.
-SESSION_LOG = "session_log.txt"       # The file used to log session errors.
-DUMP_FILE = "profile_dump.txt"        # The name of the file where the profile
-                                      # data will be dumped.
+
+# ============================
+# Paths and Files
+# ============================
+DOWNLOAD_FOLDER = "Downloads"    # The folder where downloaded files will be stored.
+URLS_FILE = "URLs.txt"           # The file containing the list of URLs to process.
+SESSION_LOG = "session_log.txt"  # The file used to log session errors.
+DUMP_FILE = "profile_dump.txt"   # The file where the profile data will be dumped.
+
+# ============================
+# Download Settings
+# ============================
+MAX_WORKERS = 3  # The maximum number of threads for concurrent downloads.
 
 # Country codes representing different regions.
 REGIONS = [
-    "cn", "cz", "de", "es", "fr", "it",
-    "nl", "jp", "pt", "pl", "rt", "se",
+    "cn", "cz", "de", "es", "fr", "gr", "it",
+    "nl", "jp", "pt", "pl", "rt", "ru", "se",
 ]
 
 # Constants for file sizes, expressed in bytes.
@@ -27,7 +34,6 @@ KB = 1024
 MB = 1024 * KB
 
 # Thresholds for file sizes and corresponding chunk sizes used during download.
-# Each tuple represents: (file size threshold, chunk size to download in that range).
 THRESHOLDS = [
     (1 * MB, 4 * KB),     # Less than 1 MB
     (10 * MB, 8 * KB),    # 1 MB to 10 MB
