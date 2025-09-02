@@ -58,7 +58,7 @@ def main() -> None:
     profile_name = handle_profile_processing(args.profile)
 
     # Read the content from the determined file, processes the URLs, and clear the files
-    urls = read_file(file_to_read)
+    urls = [url.strip() for url in read_file(file_to_read) if url.strip()]
     process_urls(urls, profile_name)
     write_file(URLS_FILE)
 
