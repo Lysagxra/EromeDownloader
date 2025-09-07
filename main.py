@@ -16,7 +16,7 @@ from album_downloader import (
     download_album,
     extract_profile_name,
     initialize_managers,
-    setup_parser,
+    parse_arguments,
     validate_url,
 )
 from helpers.config import DUMP_FILE, URLS_FILE
@@ -53,7 +53,7 @@ def main() -> None:
     write_file(DUMP_FILE)
 
     # Parse arguments, determine which file to read, and handle profile processing
-    args = setup_parser()
+    args = parse_arguments()
     file_to_read = DUMP_FILE if args.profile else URLS_FILE
     profile_name = handle_profile_processing(args.profile)
 

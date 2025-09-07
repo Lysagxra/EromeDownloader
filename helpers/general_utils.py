@@ -9,23 +9,28 @@ from __future__ import annotations
 
 import logging
 import os
+import re
 import sys
 from pathlib import Path
 
 import requests
 from bs4 import BeautifulSoup
 
-from .config import DOWNLOAD_FOLDER, HTTP_STATUS_GONE, HTTP_STATUS_NOT_FOUND
+from .config import DOWNLOAD_FOLDER, HTTPStatus
 
 
-def fetch_page(url: str, timeout: int = 10) -> BeautifulSoup | None:
+def fetch_page(
+    url: str,
+    cookies: dict[str, str] | None = None,
+    timeout: int = 10,
+) -> BeautifulSoup | None:
     """Fetch the HTML content of a webpage."""
     # Create a new session per worker
     session = requests.Session()
 
     try:
-        response = session.get(url, timeout=timeout)
-        if response.status_code in (HTTP_STATUS_NOT_FOUND, HTTP_STATUS_GONE):
+        response = session.get(url, cookies=cookies, timeout=timeout)
+        if response.status_code in (HTTPStatus.NOT_FOUND, HTTPStatus.GONE):
             log_message = f"Page not found or permanently removed: {url}"
             logging.warning(log_message)
             return None
@@ -39,16 +44,28 @@ def fetch_page(url: str, timeout: int = 10) -> BeautifulSoup | None:
 
     return BeautifulSoup(response.text, "html.parser")
 
+def sanitize_directory_name(directory_name: str) -> str:
+    """Sanitize a given directory name by removing invalid characters.
+
+    Handles the invalid characters specific to Windows, macOS, and Linux.
+    """
+    invalid_chars_dict = {
+        "nt": r'[\\/:*?"<>|]',  # Windows
+        "posix": r"[/:]",       # macOS and Linux
+    }
+    invalid_chars = invalid_chars_dict.get(os.name)
+    return re.sub(invalid_chars, "", directory_name)
+
 
 def create_download_directory(directory_path: str) -> str:
     """Construct a download path for the given title."""
-    download_path = Path(DOWNLOAD_FOLDER) / Path(directory_path)
+    download_path = Path(DOWNLOAD_FOLDER) / sanitize_directory_name(directory_path)
 
     try:
         Path(download_path).mkdir(parents=True, exist_ok=True)
 
     except OSError:
-        logging.exception("Error creating directory")
+        logging.exception("Error creating 'Downloads' directory")
         sys.exit(1)
 
     return download_path

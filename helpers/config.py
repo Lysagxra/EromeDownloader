@@ -4,6 +4,8 @@ These configurations aim to improve modularity and readability by consolidating 
 into a single location.
 """
 
+from enum import IntEnum
+
 # ============================
 # Host Configuration
 # ============================
@@ -47,6 +49,20 @@ LARGE_FILE_CHUNK_SIZE = 64 * KB
 # ============================
 # HTTP / Network
 # ============================
-# HTTP status codes
-HTTP_STATUS_NOT_FOUND = 404
-HTTP_STATUS_GONE = 410
+class HTTPStatus(IntEnum):
+    """Enumeration of common HTTP status codes used in the project."""
+
+    OK = 200
+    FORBIDDEN = 403
+    NOT_FOUND = 404
+    GONE = 410
+    TOO_MANY_REQUESTS = 429
+    INTERNAL_ERROR = 500
+    BAD_GATEWAY = 502
+    SERVICE_UNAVAILABLE = 503
+    SERVER_DOWN = 521
+
+# User-Agent string to mimic a Firefox browser
+USER_AGENT = (
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/109.0"
+)
