@@ -71,9 +71,9 @@ To batch download from multiple album URLs, you can use the `main.py` script. Th
 - Example of `URLs.txt`:
 
 ```
+https://www.erome.com/a/fNpP7r11
+https://www.erome.com/a/o0I2Smt1
 https://www.erome.com/a/cef1Rmyr
-https://www.erome.com/a/1A3vgEBR
-https://www.erome.com/a/IBFlQcQH
 ```
 
 - Ensure that each URL is on its own line without any extra spaces.
