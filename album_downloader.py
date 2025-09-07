@@ -33,11 +33,8 @@ def extract_album_title(soup: BeautifulSoup, album_id: str) -> str:
     return f"{album_title} ({album_id})"
 
 
-def extract_download_links(soup: BeautifulSoup) -> list[str] | None:
+def extract_download_links(soup: BeautifulSoup) -> list[str]:
     """Extract download links for image and video sources from the album URL."""
-    if soup is None:
-        return None
-
     image_items = soup.find_all("img", {"class": "img-back"})
     video_items = soup.find_all("source")
 
@@ -53,6 +50,9 @@ def download_album(
 ) -> None:
     """Download an album from the given URL."""
     soup = fetch_page(album_url)
+    if soup is None:
+        return None
+
     album_id = album_url.rstrip("/").split("/")[-1]
     album_title = extract_album_title(soup, album_id)
     album_path = album_title if not profile else Path(profile) / album_title
