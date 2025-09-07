@@ -9,8 +9,16 @@ from __future__ import annotations
 from collections import deque
 
 from rich.panel import Panel
-from rich.progress import BarColumn, Progress, SpinnerColumn, TextColumn
+from rich.progress import (
+    BarColumn,
+    Progress,
+    SpinnerColumn,
+    TextColumn,
+    TimeRemainingColumn,
+)
 from rich.table import Column, Table
+
+from helpers.config import COLUMNS_SEPARATOR
 
 
 class ProgressManager:
@@ -28,7 +36,7 @@ class ProgressManager:
         self.item_description = item_description
         self.color = color
         self.overall_progress = create_progress_bar()
-        self.task_progress = create_progress_bar()
+        self.task_progress = create_progress_bar(show_time=True)
         self.num_tasks = 0
         self.overall_buffer = deque(maxlen=overall_buffer_size)
 
@@ -121,7 +129,11 @@ def adjust_description(description: str, max_length: int = 8) -> str:
     )
 
 
-def create_progress_bar(columns: list[Column] | None = None) -> Progress:
+def create_progress_bar(
+    columns: list[Column | str] | None = None,
+    *,
+    show_time: bool = False,
+) -> Progress:
     """Create a progress bar for tracking download progress."""
     if columns is None:
         columns = [
@@ -129,4 +141,8 @@ def create_progress_bar(columns: list[Column] | None = None) -> Progress:
             BarColumn(),
             TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
         ]
+
+    if show_time:
+        columns = [*columns, COLUMNS_SEPARATOR, TimeRemainingColumn()]
+
     return Progress("{task.description}", *columns)

@@ -21,7 +21,8 @@ DUMP_FILE = "profile_dump.txt"   # The file where the profile data will be dumpe
 # ============================
 # Download Settings
 # ============================
-MAX_WORKERS = 3  # The maximum number of threads for concurrent downloads.
+MAX_WORKERS = 3          # The maximum number of threads for concurrent downloads.
+COLUMNS_SEPARATOR = "•"  # Visual separator used between progress bar columns.
 
 # Country codes representing different regions.
 REGIONS = [

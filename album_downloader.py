@@ -22,22 +22,28 @@ from helpers.managers.log_manager import LoggerTable
 from helpers.managers.progress_manager import ProgressManager
 
 if TYPE_CHECKING:
+    from bs4 import BeautifulSoup
     from requests.models import Response
 
 
-def extract_download_links(album_url: str) -> list[str] | None:
-    """Extract download links for video and image sources from the album URL."""
-    soup = fetch_page(album_url)
+def extract_album_title(soup: BeautifulSoup, album_id: str) -> str:
+    """Extract the album title from the parsed HTML and append the album ID."""
+    title_container = soup.find("meta", {"property": "og:title", "content": True})
+    album_title = title_container.get("content").strip()
+    return f"{album_title} ({album_id})"
+
+
+def extract_download_links(soup: BeautifulSoup) -> list[str] | None:
+    """Extract download links for image and video sources from the album URL."""
     if soup is None:
         return None
 
-    videos = [
-        video_source["src"] for video_source in soup.find_all("source")
-    ]
-    images = [
-        image["data-src"] for image in soup.find_all("img", {"class": "img-back"})
-    ]
-    return list({*videos, *images})
+    image_items = soup.find_all("img", {"class": "img-back"})
+    video_items = soup.find_all("source")
+
+    image_download_links = [image_item.get("data-src") for image_item in image_items]
+    video_download_links = [video_item.get("src") for video_item in video_items]
+    return list({*image_download_links, *video_download_links})
 
 
 def download_album(
@@ -46,11 +52,13 @@ def download_album(
     profile: str | None = None,
 ) -> None:
     """Download an album from the given URL."""
+    soup = fetch_page(album_url)
     album_id = album_url.rstrip("/").split("/")[-1]
-    album_path = album_id if not profile else Path(profile) / album_id
+    album_title = extract_album_title(soup, album_id)
+    album_path = album_title if not profile else Path(profile) / album_title
     download_path = create_download_directory(album_path)
 
-    download_links = extract_download_links(album_url)
+    download_links = extract_download_links(soup)
     if download_links is None:
         return
 
@@ -83,20 +91,20 @@ def configure_session(
 
 def download(
     download_link: str,
-    task: int,
+    task_id: int,
     live_manager: LiveManager,
     download_path: str,
     album_url: str,
 ) -> None:
     """Download a file from the specified download link."""
     parsed_url = urlparse(download_link)
-    file_name = Path(parsed_url.path).name
+    filename = Path(parsed_url.path).name
 
     hostname = extract_hostname(download_link)
-    final_path = Path(download_path) / file_name
+    final_path = Path(download_path) / filename
 
     with configure_session(download_link, hostname, album_url) as response:
-        save_file_with_progress(response, final_path, task, live_manager)
+        save_file_with_progress(response, final_path, task_id, live_manager)
 
 
 def initialize_managers() -> LiveManager:
