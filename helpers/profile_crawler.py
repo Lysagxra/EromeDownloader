@@ -19,27 +19,16 @@ import logging
 import re
 import sys
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-import requests
-from bs4 import BeautifulSoup
 from rich.console import Console
 
 from .config import DUMP_FILE, HOST_PAGE
+from .general_utils import fetch_page
 from .managers.progress_manager import create_progress_bar
 
-
-def fetch_profile_page(url: str) -> BeautifulSoup:
-    """Fetch the profile page and returns its BeautifulSoup object."""
-    try:
-        response = requests.get(url, timeout=10)
-        response.raise_for_status()
-
-    except requests.RequestException as req_err:
-        message = f"Error fetching the page: {req_err}"
-        logging.exception(message)
-        sys.exit(1)
-
-    return BeautifulSoup(response.text, "html.parser")
+if TYPE_CHECKING:
+    from bs4 import BeautifulSoup
 
 
 def extract_page_number(page_link: dict[str, str]) -> int | None:
@@ -99,7 +88,7 @@ def get_profile_album_links(pages: list[str]) -> list[str]:
     with create_progress_bar() as progress_bar:
         task = progress_bar.add_task("[cyan]Progress", total=num_pages)
         for page in pages:
-            soup = fetch_profile_page(page)
+            soup = fetch_page(page)
             album_links = extract_album_links_in_page(soup)
             profile_album_links.extend(album_links)
             progress_bar.advance(task)
@@ -118,7 +107,7 @@ def process_profile_url(url: str) -> None:
     profile = url.split("/")[-1]
     console = Console()
     console.print(f"Dumping profile: [bold]{profile}[/bold]")
-    soup = fetch_profile_page(url)
+    soup = fetch_page(url)
 
     try:
         page_links = get_profile_page_links(soup, profile)

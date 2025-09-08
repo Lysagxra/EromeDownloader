@@ -9,8 +9,10 @@ from __future__ import annotations
 
 import logging
 import os
+import random
 import re
 import sys
+import time
 from pathlib import Path
 
 import requests
@@ -23,26 +25,39 @@ def fetch_page(
     url: str,
     cookies: dict[str, str] | None = None,
     timeout: int = 10,
+    retries: int = 4,
 ) -> BeautifulSoup | None:
     """Fetch the HTML content of a webpage."""
     # Create a new session per worker
     session = requests.Session()
 
-    try:
-        response = session.get(url, cookies=cookies, timeout=timeout)
-        if response.status_code in (HTTPStatus.NOT_FOUND, HTTPStatus.GONE):
-            log_message = f"Page not found or permanently removed: {url}"
-            logging.warning(log_message)
-            return None
+    for attempt in range(retries):
+        try:
+            response = session.get(url, cookies=cookies, timeout=timeout)
+            if response.status_code in (HTTPStatus.NOT_FOUND, HTTPStatus.GONE):
+                log_message = f"Page not found or permanently removed: {url}"
+                logging.warning(log_message)
+                return None
 
-        response.raise_for_status()
+            response.raise_for_status()
+            return BeautifulSoup(response.text, "html.parser")
 
-    except requests.RequestException as req_err:
-        message = f"Error fetching page {url}: {req_err}"
-        logging.exception(message)
-        sys.exit(1)
+        except requests.RequestException as req_err:
+            message = f"Error fetching page {url}: {req_err}"
+            logging.exception(message)
 
-    return BeautifulSoup(response.text, "html.parser")
+            # Exit after retries exceeded
+            if attempt == retries - 1:
+                sys.exit(1)
+
+            # Otherwise, retry with an exponential backoff
+            delay = 2 ** (attempt + 1) + random.uniform(1, 2)  # noqa: S311
+            message = f"Retrying ({attempt + 1}/{retries})..."
+            logging.info(message)
+            time.sleep(delay)
+
+    return None
+
 
 def sanitize_directory_name(directory_name: str) -> str:
     """Sanitize a given directory name by removing invalid characters.
@@ -57,9 +72,12 @@ def sanitize_directory_name(directory_name: str) -> str:
     return re.sub(invalid_chars, "", directory_name)
 
 
-def create_download_directory(directory_path: str) -> str:
+def create_download_directory(source_directory: str) -> str:
     """Construct a download path for the given title."""
-    download_path = Path(DOWNLOAD_FOLDER) / sanitize_directory_name(directory_path)
+    source_directory = Path(source_directory)
+    directory_name = source_directory.name
+    sanitized_name = sanitize_directory_name(directory_name)
+    download_path = Path(DOWNLOAD_FOLDER) / source_directory.with_name(sanitized_name)
 
     try:
         Path(download_path).mkdir(parents=True, exist_ok=True)

@@ -23,7 +23,7 @@ DUMP_FILE = "profile_dump.txt"   # The file where the profile data will be dumpe
 # ============================
 # Download Settings
 # ============================
-MAX_WORKERS = 3          # The maximum number of threads for concurrent downloads.
+MAX_WORKERS = 2          # The maximum number of threads for concurrent downloads.
 COLUMNS_SEPARATOR = "•"  # Visual separator used between progress bar columns.
 
 # Country codes representing different regions.
@@ -38,13 +38,13 @@ MB = 1024 * KB
 
 # Thresholds for file sizes and corresponding chunk sizes used during download.
 THRESHOLDS = [
-    (1 * MB, 4 * KB),     # Less than 1 MB
-    (10 * MB, 8 * KB),    # 1 MB to 10 MB
-    (100 * MB, 16 * KB),  # 10 MB to 100 MB
+    (1 * MB, 2 * KB),    # Less than 1 MB
+    (10 * MB, 4 * KB),   # 1 MB to 10 MB
+    (100 * MB, 8 * KB),  # 10 MB to 100 MB
 ]
 
 # Default chunk size for files larger than the largest threshold.
-LARGE_FILE_CHUNK_SIZE = 64 * KB
+LARGE_FILE_CHUNK_SIZE = 16 * KB
 
 # ============================
 # HTTP / Network
