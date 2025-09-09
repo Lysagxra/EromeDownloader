@@ -7,12 +7,6 @@ into a single location.
 from enum import IntEnum
 
 # ============================
-# Host Configuration
-# ============================
-HOST_NETLOC = "www.erome.com"         # Host name of the site.
-HOST_PAGE = f"https://{HOST_NETLOC}"  # Full URL of the homepage.
-
-# ============================
 # Paths and Files
 # ============================
 DOWNLOAD_FOLDER = "Downloads"    # The folder where downloaded files will be stored.
@@ -21,16 +15,33 @@ SESSION_LOG = "session_log.txt"  # The file used to log session errors.
 DUMP_FILE = "profile_dump.txt"   # The file where the profile data will be dumped.
 
 # ============================
-# Download Settings
+# UI & Table Settings
 # ============================
-MAX_WORKERS = 2          # The maximum number of threads for concurrent downloads.
 COLUMNS_SEPARATOR = "•"  # Visual separator used between progress bar columns.
+
+# Constant defining the minimum width for each column
+MIN_COLUMN_WIDTHS = {
+    "Timestamp": 10,
+    "Event": 15,
+    "Details": 30,
+}
+
+# ============================
+# Host Configuration
+# ============================
+HOST_NETLOC = "www.erome.com"         # Host name of the site.
+HOST_PAGE = f"https://{HOST_NETLOC}"  # Full URL of the homepage.
 
 # Country codes representing different regions.
 REGIONS = [
     "cn", "cz", "de", "es", "fr", "gr", "it",
     "nl", "jp", "pt", "pl", "rt", "ru", "se",
 ]
+
+# ============================
+# Download Settings
+# ============================
+MAX_WORKERS = 2          # The maximum number of threads for concurrent downloads.
 
 # Constants for file sizes, expressed in bytes.
 KB = 1024

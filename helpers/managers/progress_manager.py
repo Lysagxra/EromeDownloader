@@ -6,6 +6,7 @@ monitoring task completion.
 
 from __future__ import annotations
 
+import shutil
 from collections import deque
 
 from rich.panel import Panel
@@ -74,8 +75,11 @@ class ProgressManager:
         )
         self._update_overall_task(task_id)
 
-    def create_progress_table(self) -> Table:
+    def create_progress_table(self, min_panel_width: int = 30) -> Table:
         """Create a formatted progress table for tracking the download."""
+        terminal_width, _ = shutil.get_terminal_size()
+        panel_width = max(min_panel_width, terminal_width // 2)
+
         progress_table = Table.grid()
         progress_table.add_row(
             Panel.fit(
@@ -83,14 +87,14 @@ class ProgressManager:
                 title=f"[bold {self.color}]Overall Progress",
                 border_style="bright_blue",
                 padding=(1, 1),
-                width=40,
+                width=panel_width,
             ),
             Panel.fit(
                 self.task_progress,
                 title=f"[bold {self.color}]{self.task_name} Progress",
                 border_style="medium_purple",
                 padding=(1, 1),
-                width=40,
+                width=panel_width,
             ),
         )
         return progress_table

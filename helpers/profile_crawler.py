@@ -104,7 +104,7 @@ def generate_profile_dump(profile_album_links: list[str]) -> None:
 
 def process_profile_url(url: str) -> None:
     """Process a profile URL to fetch and generate a profile dump."""
-    profile = url.split("/")[-1]
+    profile = url.rstrip("/").split("/")[-1]
     console = Console()
     console.print(f"Dumping profile: [bold]{profile}[/bold]")
     soup = fetch_page(url)
