@@ -18,6 +18,8 @@ from rich.box import SIMPLE
 from rich.panel import Panel
 from rich.table import Table
 
+from helpers.config import MIN_COLUMN_WIDTHS
+
 
 class LoggerTable:
     """Class for logging events and displaying them in a table with scrolling rows."""
@@ -75,15 +77,8 @@ class LoggerTable:
 
     def _create_table(self) -> Table:
         """Create a new table with the necessary columns and styles."""
-        # Define minimum column widths
-        min_column_widths = {
-            "Timestamp": 10,
-            "Event": 15,
-            "Details": 30,
-        }
-
         # Calculate the dynamic column widths
-        col_widths = self._calculate_column_widths(min_column_widths)
+        col_widths = self._calculate_column_widths(MIN_COLUMN_WIDTHS)
 
         new_table = Table(
             box=SIMPLE,                     # Box style for the table
