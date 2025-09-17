@@ -15,12 +15,12 @@ import sys
 from typing import TYPE_CHECKING
 
 from downloader import download_album
-from helpers.config import DUMP_FILE, URLS_FILE, parse_arguments
-from helpers.erome_utils import extract_profile_name, validate_url
-from helpers.file_utils import read_file, write_file
-from helpers.general_utils import clear_terminal
-from helpers.managers.live_manager import initialize_managers
-from helpers.profile_crawler import process_profile_url
+from src.config import DUMP_FILE, URLS_FILE, parse_arguments
+from src.erome_utils import extract_profile_name, validate_url
+from src.file_utils import read_file, write_file
+from src.general_utils import clear_terminal
+from src.managers.live_manager import initialize_managers
+from src.profile_crawler import process_profile_url
 
 if TYPE_CHECKING:
     from argparse import Namespace
