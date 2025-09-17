@@ -7,7 +7,6 @@ monitoring task completion.
 from __future__ import annotations
 
 import shutil
-from collections import deque
 
 from rich.panel import Panel
 from rich.progress import (
@@ -19,7 +18,11 @@ from rich.progress import (
 )
 from rich.table import Column, Table
 
-from helpers.config import COLUMNS_SEPARATOR
+from helpers.config import (
+    PROGRESS_COLUMNS_SEPARATOR,
+    PROGRESS_MANAGER_COLORS,
+    ProgressConfig,
+)
 
 
 class ProgressManager:
@@ -29,24 +32,23 @@ class ProgressManager:
         self,
         task_name: str,
         item_description: str,
-        color: str = "light_cyan3",
-        overall_buffer_size: int = 5,
     ) -> None:
         """Initialize a progress tracking system for a specific task."""
-        self.task_name = task_name
-        self.item_description = item_description
-        self.color = color
+        self.config = ProgressConfig(task_name, item_description)
         self.overall_progress = create_progress_bar()
         self.task_progress = create_progress_bar(show_time=True)
         self.num_tasks = 0
-        self.overall_buffer = deque(maxlen=overall_buffer_size)
+
+    def get_panel_width(self) -> int:
+        """Return the width of the panel."""
+        return self.config.panel_width
 
     def add_overall_task(self, description: str, num_tasks: int) -> None:
         """Add an overall progress task with a given description and total tasks."""
         self.num_tasks = num_tasks
         overall_description = adjust_description(description)
         self.overall_progress.add_task(
-            f"[{self.color}]{overall_description}",
+            f"[{self.config.color}]{overall_description}",
             total=num_tasks,
             completed=0,
         )
@@ -54,7 +56,8 @@ class ProgressManager:
     def add_task(self, current_task: int = 0, total: int = 100) -> int:
         """Add an individual task to the task progress bar."""
         task_description = (
-            f"[{self.color}]{self.item_description} {current_task + 1}/{self.num_tasks}"
+            f"[{self.config.color}]{self.config.item_description} "
+            f"{current_task + 1}/{self.num_tasks}"
         )
         return self.task_progress.add_task(task_description, total=total)
 
@@ -84,15 +87,15 @@ class ProgressManager:
         progress_table.add_row(
             Panel.fit(
                 self.overall_progress,
-                title=f"[bold {self.color}]Overall Progress",
-                border_style="bright_blue",
+                title=f"[bold {self.config.color}]Overall Progress",
+                border_style=PROGRESS_MANAGER_COLORS["overall_border_color"],
                 padding=(1, 1),
                 width=panel_width,
             ),
             Panel.fit(
                 self.task_progress,
-                title=f"[bold {self.color}]{self.task_name} Progress",
-                border_style="medium_purple",
+                title=f"[bold {self.config.color}]{self.config.task_name} Progress",
+                border_style=PROGRESS_MANAGER_COLORS["task_border_color"],
                 padding=(1, 1),
                 width=panel_width,
             ),
@@ -112,15 +115,15 @@ class ProgressManager:
 
         # Track completed overall tasks
         if current_overall_task.finished:
-            self.overall_buffer.append(current_overall_task)
+            self.config.overall_buffer.append(current_overall_task)
 
         # Cleanup completed overall tasks
         self._cleanup_completed_overall_tasks()
 
     def _cleanup_completed_overall_tasks(self) -> None:
         """Remove the oldest completed overall task from the buffer."""
-        if len(self.overall_buffer) == self.overall_buffer.maxlen:
-            completed_overall_id = self.overall_buffer.popleft().id
+        if len(self.config.overall_buffer) == self.config.overall_buffer.maxlen:
+            completed_overall_id = self.config.overall_buffer.popleft().id
             self.overall_progress.remove_task(completed_overall_id)
 
 
@@ -147,6 +150,6 @@ def create_progress_bar(
         ]
 
     if show_time:
-        columns = [*columns, COLUMNS_SEPARATOR, TimeRemainingColumn()]
+        columns += [PROGRESS_COLUMNS_SEPARATOR, TimeRemainingColumn()]
 
     return Progress("{task.description}", *columns)

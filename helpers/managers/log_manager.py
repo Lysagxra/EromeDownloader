@@ -18,7 +18,7 @@ from rich.box import SIMPLE
 from rich.panel import Panel
 from rich.table import Table
 
-from helpers.config import MIN_COLUMN_WIDTHS
+from helpers.config import LOG_MANAGER_CONFIG
 
 
 class LoggerTable:
@@ -27,16 +27,14 @@ class LoggerTable:
     def __init__(
         self,
         max_rows: int = 4,
-        title_color: str = "light_cyan3",
-        border_style: str = "cyan",
     ) -> None:
         """Initialize the table with a circular buffer for scrolling rows."""
         # Circular buffer for scrolling rows
         self.row_buffer = deque(maxlen=max_rows)
 
         # Create the table with initial setup
-        self.title_color = title_color
-        self.border_style = border_style
+        self.title_color = LOG_MANAGER_CONFIG["colors"]["title_color"]
+        self.border_style = LOG_MANAGER_CONFIG["colors"]["border_color"]
         self.table = self._create_table()
 
     def log(self, event: str, details: str) -> None:
@@ -44,13 +42,14 @@ class LoggerTable:
         timestamp = datetime.now(timezone.utc).strftime("%H:%M:%S")
         self.row_buffer.append((timestamp, event, details))
 
-    def render_log_panel(self) -> Panel:
+    def render_log_panel(self, panel_width: int = 40) -> Panel:
         """Render the log panel containing the log table."""
         log_table = self._render_table()
-        return Panel(
+        return Panel.fit(
             log_table,
             title=f"[bold {self.title_color}]Log Messages",
             border_style=self.border_style,
+            width=2*panel_width,  # Log panel width is double the single table width
         )
 
     # Private methods
@@ -78,7 +77,9 @@ class LoggerTable:
     def _create_table(self) -> Table:
         """Create a new table with the necessary columns and styles."""
         # Calculate the dynamic column widths
-        col_widths = self._calculate_column_widths(MIN_COLUMN_WIDTHS)
+        column_styles = LOG_MANAGER_CONFIG["column_styles"]
+        min_column_widths = LOG_MANAGER_CONFIG["min_column_widths"]
+        column_widths = self._calculate_column_widths(min_column_widths)
 
         new_table = Table(
             box=SIMPLE,                     # Box style for the table
@@ -89,18 +90,18 @@ class LoggerTable:
         )
         new_table.add_column(
             f"[{self.title_color}]Timestamp",
-            style="pale_turquoise4",
-            width=col_widths["Timestamp"],
+            style=column_styles["Timestamp"],
+            width=column_widths["Timestamp"],
         )
         new_table.add_column(
             f"[{self.title_color}]Event",
-            style="pale_turquoise1",
-            width=col_widths["Event"],
+            style=column_styles["Event"],
+            width=column_widths["Event"],
         )
         new_table.add_column(
             f"[{self.title_color}]Details",
-            style="pale_turquoise4",
-            width=col_widths["Details"],
+            style=column_styles["Details"],
+            width=column_widths["Details"],
         )
         return new_table
 

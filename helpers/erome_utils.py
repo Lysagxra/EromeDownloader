@@ -17,7 +17,7 @@ def validate_url(album_url: str) -> str | None:
         return album_url
 
     for region in REGIONS:
-        if parsed_url.netloc == region + ".erome.com":
+        if parsed_url.netloc == f"{region}.erome.com":
             return f"https://{HOST_NETLOC}{parsed_url.path}"
 
     logging.error("Provide a valid Erome URL.")
@@ -27,7 +27,7 @@ def validate_url(album_url: str) -> str | None:
 def extract_profile_name(profile_url: str) -> str | None:
     """Extract the profile name from the given profile URL."""
     try:
-        return profile_url.split("/")[-1]
+        return profile_url.rstrip("/").split("/")[-1]
 
     except IndexError:
         logging.exception("Invalid profile URL.")

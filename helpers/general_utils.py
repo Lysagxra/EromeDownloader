@@ -10,15 +10,13 @@ from __future__ import annotations
 import logging
 import os
 import random
-import re
 import sys
 import time
-from pathlib import Path
 
 import requests
 from bs4 import BeautifulSoup
 
-from .config import DOWNLOAD_FOLDER, HTTPStatus
+from .config import HTTPStatus
 
 
 def fetch_page(
@@ -57,36 +55,6 @@ def fetch_page(
             time.sleep(delay)
 
     return None
-
-
-def sanitize_directory_name(directory_name: str) -> str:
-    """Sanitize a given directory name by removing invalid characters.
-
-    Handles the invalid characters specific to Windows, macOS, and Linux.
-    """
-    invalid_chars_dict = {
-        "nt": r'[\\/:*?"<>|]',  # Windows
-        "posix": r"[/:]",       # macOS and Linux
-    }
-    invalid_chars = invalid_chars_dict.get(os.name)
-    return re.sub(invalid_chars, "", directory_name)
-
-
-def create_download_directory(source_directory: str) -> str:
-    """Construct a download path for the given title."""
-    source_directory = Path(source_directory)
-    directory_name = source_directory.name
-    sanitized_name = sanitize_directory_name(directory_name)
-    download_path = Path(DOWNLOAD_FOLDER) / source_directory.with_name(sanitized_name)
-
-    try:
-        Path(download_path).mkdir(parents=True, exist_ok=True)
-
-    except OSError:
-        logging.exception("Error creating 'Downloads' directory")
-        sys.exit(1)
-
-    return download_path
 
 
 def clear_terminal() -> None:

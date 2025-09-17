@@ -1,8 +1,8 @@
 """Profile crawler module.
 
-This module provides functionality to extract album links from user profile
-pages on erome. It utilizes the BeautifulSoup library for HTML parsing and
-requests for handling HTTP requests.
+This module provides functionality to extract album links from user profile pages on
+erome. It utilizes the BeautifulSoup library for HTML parsing and requests for handling
+HTTP requests.
 
 Usage:
     Run the script from the command line, providing the profile page URL as an
@@ -13,6 +13,7 @@ Example:
     python profile_crawler.py https://www.erome.com/marieanita
 
 """
+
 from __future__ import annotations
 
 import logging
@@ -33,9 +34,11 @@ if TYPE_CHECKING:
 
 def extract_page_number(page_link: dict[str, str]) -> int | None:
     """Extract the page number from a URL."""
+    page_pattern = r"page=(\d+)"
+
     try:
-        # Extract page number using regex and convert to integer
-        return int(re.search(r"page=(\d+)", page_link["href"]).group(1))
+        match = re.search(page_pattern, page_link["href"])
+        return int(match.group(1))
 
     except (AttributeError, ValueError, TypeError) as err:
         message = f"Error extracting page index from {page_link['href']}: {err}"
@@ -68,7 +71,7 @@ def get_profile_page_links(
     if max_page_number is not None:
         # The last item of the page_links list isn't useful, so it is discarded
         formatted_page_links = [
-            HOST_PAGE + page_link["href"] for page_link in page_links[:-1]
+            HOST_PAGE + page_link.get("href") for page_link in page_links[:-1]
         ]
 
     return formatted_page_links
@@ -77,7 +80,7 @@ def get_profile_page_links(
 def extract_album_links_in_page(soup: BeautifulSoup) -> list[str]:
     """Extract album links from a BeautifulSoup object representing a webpage."""
     album_links_items = soup.find_all("a", {"class": "album-link", "href": True})
-    return [item["href"] for item in album_links_items]
+    return [item.get("href") for item in album_links_items]
 
 
 def get_profile_album_links(pages: list[str]) -> list[str]:

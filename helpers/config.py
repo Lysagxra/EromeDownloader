@@ -4,6 +4,9 @@ These configurations aim to improve modularity and readability by consolidating 
 into a single location.
 """
 
+from argparse import ArgumentParser, Namespace
+from collections import deque
+from dataclasses import dataclass, field
 from enum import IntEnum
 
 # ============================
@@ -13,18 +16,6 @@ DOWNLOAD_FOLDER = "Downloads"    # The folder where downloaded files will be sto
 URLS_FILE = "URLs.txt"           # The file containing the list of URLs to process.
 SESSION_LOG = "session_log.txt"  # The file used to log session errors.
 DUMP_FILE = "profile_dump.txt"   # The file where the profile data will be dumped.
-
-# ============================
-# UI & Table Settings
-# ============================
-COLUMNS_SEPARATOR = "•"  # Visual separator used between progress bar columns.
-
-# Constant defining the minimum width for each column
-MIN_COLUMN_WIDTHS = {
-    "Timestamp": 10,
-    "Event": 15,
-    "Details": 30,
-}
 
 # ============================
 # Host Configuration
@@ -37,6 +28,37 @@ REGIONS = [
     "cn", "cz", "de", "es", "fr", "gr", "it",
     "nl", "jp", "pt", "pl", "rt", "ru", "se",
 ]
+
+# ============================
+# UI & Table Settings
+# ============================
+BUFFER_SIZE = 5                   # Maximum number of items showed in buffers.
+PROGRESS_COLUMNS_SEPARATOR = "•"  # Visual separator used between progress bar columns.
+
+# Colors used for the progress manager UI elements
+PROGRESS_MANAGER_COLORS = {
+    "title_color": "light_cyan3",           # Title color for progress panels.
+    "overall_border_color": "bright_blue",  # Border color for overall progress panel.
+    "task_border_color": "medium_purple",   # Border color for task progress panel.
+}
+
+# Setting used for the log manager UI elements
+LOG_MANAGER_CONFIG = {
+    "colors": {
+        "title_color": "light_cyan3",  # Title color for log panel.
+        "border_color": "cyan",        # Border color for log panel.
+    },
+    "min_column_widths": {
+        "Timestamp": 10,
+        "Event": 15,
+        "Details": 30,
+    },
+    "column_styles": {
+        "Timestamp": "pale_turquoise4",
+        "Event": "pale_turquoise1",
+        "Details": "pale_turquoise4",
+    },
+}
 
 # ============================
 # Download Settings
@@ -77,3 +99,47 @@ class HTTPStatus(IntEnum):
 USER_AGENT = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/109.0"
 )
+
+# ============================
+# Data Classes
+# ============================
+@dataclass
+class ProgressConfig:
+    """Configuration for progress bar settings."""
+
+    task_name: str
+    item_description: str
+    color: str = PROGRESS_MANAGER_COLORS["title_color"]
+    panel_width = 40
+    overall_buffer: deque = field(default_factory=lambda: deque(maxlen=BUFFER_SIZE))
+
+# ============================
+# Argument Parsing
+# ============================
+def parse_arguments() -> Namespace:
+    """Set up the command-line argument parser for album download processing."""
+    parser = ArgumentParser(description="Process album downloads.")
+    parser.add_argument(
+        "-u",
+        "--url",
+        dest="url",
+        type=str,
+        metavar="album_url",
+        help="Album URL to process",
+    )
+    parser.add_argument(
+        "-p",
+        "--profile",
+        dest="profile",
+        type=str,
+        metavar="profile_url",
+        help="Generate the profile dump file from the specified profile URL",
+    )
+    parser.add_argument(
+        "--custom-path",
+        dest="custom_path",
+        type=str,
+        default=None,
+        help="The directory where the downloaded content will be saved.",
+    )
+    return parser.parse_args()

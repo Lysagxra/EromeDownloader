@@ -4,18 +4,17 @@ It combines a progress table and a logger table into a real-time display, allowi
 dynamic updates of both tables. The `LiveManager` class handles the integration and
 refresh of the live view.
 """
+
 from __future__ import annotations
 
 import datetime
 import time
-from typing import TYPE_CHECKING
 
 from rich.console import Group
 from rich.live import Live
 
-if TYPE_CHECKING:
-    from .log_manager import LoggerTable
-    from .progress_manager import ProgressManager
+from .log_manager import LoggerTable
+from .progress_manager import ProgressManager
 
 
 class LiveManager:
@@ -28,13 +27,13 @@ class LiveManager:
     def __init__(
         self,
         progress_manager: ProgressManager,
-        logger: LoggerTable,
+        logger_table: LoggerTable,
         refresh_per_second: int = 10,
     ) -> None:
         """Initialize the progress manager and logger, and set up the live view."""
         self.progress_manager = progress_manager
         self.progress_table = self.progress_manager.create_progress_table()
-        self.logger = logger
+        self.logger_table = logger_table
         self.live = Live(
             self._render_live_view(), refresh_per_second=refresh_per_second,
         )
@@ -62,7 +61,7 @@ class LiveManager:
 
     def update_log(self, event: str, details: str) -> None:
         """Log an event and refreshes the live display."""
-        self.logger.log(event, details)
+        self.logger_table.log(event, details)
         self.live.update(self._render_live_view())
 
     def start(self) -> None:
@@ -83,7 +82,11 @@ class LiveManager:
     # Private methods
     def _render_live_view(self) -> Group:
         """Render the combined live view of the progress table and the logger table."""
-        return Group(self.progress_table, self.logger.render_log_panel())
+        panel_width = self.progress_manager.get_panel_width()
+        return Group(
+            self.progress_table,
+            self.logger_table.render_log_panel(panel_width=2*panel_width),
+        )
 
     def _compute_execution_time(self) -> str:
         """Compute and format the execution time of the script."""
@@ -96,3 +99,10 @@ class LiveManager:
         seconds = time_delta.seconds % 60
 
         return f"{hours:02} hrs {minutes:02} mins {seconds:02} secs"
+
+
+def initialize_managers() -> LiveManager:
+    """Initialize and returns the managers for progress tracking and logging."""
+    progress_manager = ProgressManager(task_name="Album", item_description="File")
+    logger_table = LoggerTable()
+    return LiveManager(progress_manager, logger_table)
