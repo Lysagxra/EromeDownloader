@@ -117,24 +117,24 @@ def download_album(
     )
 
 
-def main() -> None:
-    """Initiate the download process."""
-    clear_terminal()
-    args = parse_arguments()
+#def main() -> None:
+#    """Initiate the download process."""
+#    clear_terminal()
+#    args = parse_arguments()
 
-    live_manager = initialize_managers()
-    validated_url = validate_url(args.url)
-    profile_name = extract_profile_name(args.profile) if args.profile else None
+#    live_manager = initialize_managers()
+#    validated_url = validate_url(args.url)
+#    profile_name = extract_profile_name(args.profile) if args.profile else None
 
-    with live_manager.live:
-        download_album(
-            validated_url,
-            live_manager,
-            profile=profile_name,
-            custom_path=args.custom_path,
-        )
-        live_manager.stop()
+#    with live_manager.live:
+#        download_album(
+#            validated_url,
+#            live_manager,
+#            profile=profile_name,
+#            custom_path=args.custom_path,
+#        )
+#        live_manager.stop()
 
 
-if __name__ == "__main__":
-    main()
+#if __name__ == "__main__":
+#    main()
