@@ -2,13 +2,14 @@
 
 > A Python-based tool for downloading Erome albums. This project includes functionality to extract album links from user profiles and download them efficiently.
 
-![Demo](https://github.com/Lysagxra/EromeDownloader/blob/f272207ad92373e2a7b48c12a2c093cf7ae175aa/misc/DemoV2.gif)
+![Demo](https://github.com/Lysagxra/EromeDownloader/blob/51784c7396e3809582ced6a1465459526b196784/assets/demo.gif)
 
 ## Features
 
 - Downloads multiple files concurrently from albums.
 - Supports [batch downloading](https://github.com/Lysagxra/EromeDownloader?tab=readme-ov-file#batch-download) via a list of URLs.
 - Supports [downloading of user profile](https://github.com/Lysagxra/EromeDownloader?tab=readme-ov-file#profile-crawler-and-downloader) album links.
+- Supports [custom download location](https://github.com/Lysagxra/EromeDownloader/?tab=readme-ov-file#file-download-location).
 - Tracks download progress with a progress bar.
 - Automatically creates a directory structure for organized storage.
 
@@ -19,7 +20,9 @@
 - `BeautifulSoup` (bs4) - for HTML parsing
 - `rich` - for progress display in terminal
 
-## Directory Structure
+<details>
+
+<summary>Show directory structure</summary>
 
 ```
 project-root/
@@ -39,6 +42,8 @@ project-root/
 ├── profile_dump.txt         # Log file for recording session details
 └── URLs.txt                 # Text file containing album URLs
 ```
+
+</details>
 
 ## Installation
 
@@ -85,7 +90,21 @@ https://www.erome.com/a/cef1Rmyr
 python3 main.py
 ```
 
-The downloaded files will be saved in the `Downloads` directory.
+## File Download Location
+
+If the `--custom-path <custom_path>` argument is used, the downloaded files will be saved in `<custom_path>/Downloads`. Otherwise, the files will be saved in a `Downloads` folder created within the script's directory
+
+### Usage
+
+```bash
+python3 main.py --custom-path <custom_path>
+```
+
+### Example
+
+```bash
+python3 main.py --custom-path /path/to/external/drive
+```
 
 ## Profile Crawler and Downloader
 
