@@ -14,8 +14,9 @@ from __future__ import annotations
 import sys
 from typing import TYPE_CHECKING
 
-from downloader import download_album, extract_profile_name, validate_url
+from downloader import download_album
 from helpers.config import DUMP_FILE, URLS_FILE, parse_arguments
+from helpers.erome_utils import extract_profile_name, validate_url
 from helpers.file_utils import read_file, write_file
 from helpers.general_utils import clear_terminal
 from helpers.managers.live_manager import initialize_managers

@@ -12,16 +12,17 @@ from urllib.parse import urlparse
 
 import requests
 
-from helpers.config import HOST_PAGE, USER_AGENT, parse_arguments
+from helpers.config import HOST_PAGE, USER_AGENT
 from helpers.download_utils import run_in_parallel, save_file_with_progress
-from helpers.erome_utils import extract_hostname, extract_profile_name, validate_url
+from helpers.erome_utils import extract_hostname
 from helpers.file_utils import create_download_directory
-from helpers.general_utils import clear_terminal, fetch_page
-from helpers.managers.live_manager import LiveManager, initialize_managers
+from helpers.general_utils import fetch_page
 
 if TYPE_CHECKING:
     from bs4 import BeautifulSoup
     from requests.models import Response
+
+    from helpers.managers.live_manager import LiveManager
 
 
 def get_cookies_header() -> dict[str, str]:
