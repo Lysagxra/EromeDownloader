@@ -30,7 +30,7 @@ def write_file(filename: str, content: str = "") -> None:
         file.write(content)
 
 
-def sanitize_directory_name(directory_name: str) -> str:
+def sanitize_directory_name(directory_name) -> str:
     """Sanitize a given directory name by removing invalid characters.
 
     Handles the invalid characters specific to Windows, macOS, and Linux.
@@ -39,8 +39,8 @@ def sanitize_directory_name(directory_name: str) -> str:
         "nt": r'[\\/:*?"<>|]',  # Windows
         "posix": r"[/:]",       # macOS and Linux
     }
-    invalid_chars = invalid_chars_dict.get(os.name)
-    return re.sub(invalid_chars, "", directory_name)
+    invalid_chars = invalid_chars_dict.get(os.name, r"[/:]")  # Default fallback
+    return re.sub(invalid_chars, "", str(directory_name))
 
 
 def create_download_directory(
