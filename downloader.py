@@ -68,8 +68,16 @@ def extract_download_links(soup: BeautifulSoup) -> list[str]:
     image_items = soup.find_all("img", {"class": "img-back"})
     video_items = soup.find_all("source")
 
-    image_download_links = [image_item.get("data-src") for image_item in image_items]
+    image_download_links = [
+        image_item.get("data-src")
+        or image_item.get("src")
+        or image_item.get("data-lazy-src")
+        or image_item.get("data-cfsrc")
+        for image_item in image_items
+    ]
     video_download_links = [video_item.get("src") for video_item in video_items]
+    image_download_links = [link for link in image_download_links if link]
+    video_download_links = [link for link in video_download_links if link]
     return list({*image_download_links, *video_download_links})
 
 
