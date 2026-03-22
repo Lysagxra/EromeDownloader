@@ -75,9 +75,9 @@ def extract_download_links(soup: BeautifulSoup) -> list[str]:
         or image_item.get("data-cfsrc")
         for image_item in image_items
     ]
-    video_download_links = [video_item.get("src") for video_item in video_items]
-    image_download_links = [link for link in image_download_links if link]
-    video_download_links = [link for link in video_download_links if link]
+    video_download_links = [
+        video_item.get("src") for video_item in video_items if video_item.get("src")
+    ]
     return list({*image_download_links, *video_download_links})
 
 

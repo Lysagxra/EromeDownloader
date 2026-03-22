@@ -9,6 +9,8 @@ from collections import deque
 from dataclasses import dataclass, field
 from enum import IntEnum
 
+from .version import get_version_string
+
 # ============================
 # Paths and Files
 # ============================
@@ -141,5 +143,11 @@ def parse_arguments() -> Namespace:
         type=str,
         default=None,
         help="The directory where the downloaded content will be saved.",
+    )
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=get_version_string(),
+        help="Show program's version and exit.",
     )
     return parser.parse_args()
